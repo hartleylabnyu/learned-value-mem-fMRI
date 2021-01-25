@@ -1,0 +1,97 @@
+sub	trial	stim	freqCond	truePair	foilLowFreq	foilHighFreq	foilNovel	truePairPos	foilLowFreqPos	foilHighFreqPos	foilNovelPos	memResp	memRT	memTrialStart	memTrialEnd	memTrialITI	memTrialITIStart	memTrialITIEnd	block
+141	25	 c3.jpg	5	 s30.jpeg	 s26.jpeg	 s16.jpeg	 s31.jpeg	4	2	3	1	4	1.50E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+0	 																		
+141	26	 c7.jpg	5	 s29.jpeg	 s15.jpeg	 s30.jpeg	 s33.jpeg	3	4	1	2	3	1.72E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+0	 																		
+141	27	 c9.jpg	5	 s25.jpeg	 s13.jpeg	 s21.jpeg	 s9.jpeg	4	2	1	3	4	1.57E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	28	 c24.jpg	5	 s21.jpeg	 s22.jpeg	 s23.jpeg	 s35.jpeg	4	1	2	3	4	1.45E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	29	 c12.jpg	5	 s1.jpeg	 s14.jpeg	 s24.jpeg	 s32.jpeg	1	3	2	4	2	1.67E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	30	 c15.jpg	5	 s11.jpeg	 s3.jpeg	 s29.jpeg	 s4.jpeg	2	4	3	1	2	1.26E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	31	 c20.jpg	5	 s23.jpeg	 s10.jpeg	 s25.jpeg	 s7.jpeg	2	1	4	3	2	2.13E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	32	 c20.jpg	5	 s23.jpeg	 s10.jpeg	 s25.jpeg	 s7.jpeg	2	1	4	3	2	1.11E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	33	 c23.jpg	5	 s2.jpeg	 s17.jpeg	 s28.jpeg	 s5.jpeg	2	4	3	1	3	2.89E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+0	 																		
+141	34	 c5.jpg	5	 s27.jpeg	 s19.jpeg	 s28.jpeg	 s6.jpeg	2	1	3	4	2	2.70E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	35	 c20.jpg	5	 s23.jpeg	 s10.jpeg	 s25.jpeg	 s7.jpeg	2	1	4	3	2	1.79E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	36	 c4.jpg	5	 s16.jpeg	 s12.jpeg	 s2.jpeg	 s34.jpeg	4	1	3	2	4	2.11E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+0	 																		
+141	37	 c5.jpg	5	 s27.jpeg	 s19.jpeg	 s28.jpeg	 s6.jpeg	2	1	3	4	2	2.17E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	38	 c22.jpg	5	 s28.jpeg	 s19.jpeg	 s16.jpeg	 s34.jpeg	2	4	3	1	2	1.25E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+0	 																		
+141	39	 c24.jpg	5	 s21.jpeg	 s22.jpeg	 s23.jpeg	 s35.jpeg	4	1	2	3	4	1.21E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	40	 c9.jpg	5	 s25.jpeg	 s13.jpeg	 s21.jpeg	 s9.jpeg	4	2	1	3	4	1.44E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	41	 c4.jpg	5	 s16.jpeg	 s12.jpeg	 s2.jpeg	 s34.jpeg	4	1	3	2	4	2.05E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+0	 																		
+141	42	 c22.jpg	5	 s28.jpeg	 s19.jpeg	 s16.jpeg	 s34.jpeg	2	4	3	1	2	1.13E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+0	 																		
+141	43	 c9.jpg	5	 s25.jpeg	 s13.jpeg	 s21.jpeg	 s9.jpeg	4	2	1	3	4	1.31E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+0	 																		
+141	44	 c7.jpg	5	 s29.jpeg	 s15.jpeg	 s30.jpeg	 s33.jpeg	3	4	1	2	3	1.59E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+0	 																		
+141	45	 c5.jpg	5	 s27.jpeg	 s19.jpeg	 s28.jpeg	 s6.jpeg	2	1	3	4	2	2.20E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	46	 c3.jpg	5	 s30.jpeg	 s26.jpeg	 s16.jpeg	 s31.jpeg	4	2	3	1	4	1.07E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	47	 c14.jpg	5	 s24.jpeg	 s18.jpeg	 s11.jpeg	 s31.jpeg	4	1	2	3	2	2.32E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+0	 																		
+141	48	 c4.jpg	5	 s16.jpeg	 s12.jpeg	 s2.jpeg	 s34.jpeg	4	1	3	2	4	1.43E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+1	 																		
+141	49	 c12.jpg	5	 s1.jpeg	 s14.jpeg	 s24.jpeg	 s32.jpeg	1	3	2	4	2	1.57E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+0	 																		
+141	50	 c22.jpg	5	 s28.jpeg	 s19.jpeg	 s16.jpeg	 s34.jpeg	2	4	3	1	2	9.22E-01	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+0	 																		
+141	51	 c20.jpg	5	 s23.jpeg	 s10.jpeg	 s25.jpeg	 s7.jpeg	2	1	4	3	2	1.93E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	52	 c7.jpg	5	 s29.jpeg	 s15.jpeg	 s30.jpeg	 s33.jpeg	3	4	1	2	3	1.75E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	53	 c12.jpg	5	 s1.jpeg	 s14.jpeg	 s24.jpeg	 s32.jpeg	1	3	2	4	2	1.32E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+	 																		
+141	54	 c9.jpg	5	 s25.jpeg	 s13.jpeg	 s21.jpeg	 s9.jpeg	4	2	1	3	4	1.13E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	55	 c15.jpg	5	 s11.jpeg	 s3.jpeg	 s29.jpeg	 s4.jpeg	2	4	3	1	2	9.75E-01	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	56	 c24.jpg	5	 s21.jpeg	 s22.jpeg	 s23.jpeg	 s35.jpeg	4	1	2	3	4	9.52E-01	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	57	 c14.jpg	5	 s24.jpeg	 s18.jpeg	 s11.jpeg	 s31.jpeg	4	1	2	3	2	1.89E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	58	 c3.jpg	5	 s30.jpeg	 s26.jpeg	 s16.jpeg	 s31.jpeg	4	2	3	1	4	9.74E-01	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	59	 c14.jpg	5	 s24.jpeg	 s18.jpeg	 s11.jpeg	 s31.jpeg	4	1	2	3	4	1.21E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	60	 c23.jpg	5	 s2.jpeg	 s17.jpeg	 s28.jpeg	 s5.jpeg	2	4	3	1	2	3.53E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	61	 c22.jpg	5	 s28.jpeg	 s19.jpeg	 s16.jpeg	 s34.jpeg	2	4	3	1	2	1.11E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	62	 c15.jpg	5	 s11.jpeg	 s3.jpeg	 s29.jpeg	 s4.jpeg	2	4	3	1	2	9.33E-01	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	63	 c12.jpg	5	 s1.jpeg	 s14.jpeg	 s24.jpeg	 s32.jpeg	1	3	2	4	2	1.50E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	64	 c23.jpg	5	 s2.jpeg	 s17.jpeg	 s28.jpeg	 s5.jpeg	2	4	3	1	2	2.03E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	65	 c15.jpg	5	 s11.jpeg	 s3.jpeg	 s29.jpeg	 s4.jpeg	2	4	3	1	2	9.70E-01	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	66	 c23.jpg	5	 s2.jpeg	 s17.jpeg	 s28.jpeg	 s5.jpeg	2	4	3	1	2	1.63E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	67	 c5.jpg	5	 s27.jpeg	 s19.jpeg	 s28.jpeg	 s6.jpeg	2	1	3	4	2	1.06E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	68	 c4.jpg	5	 s16.jpeg	 s12.jpeg	 s2.jpeg	 s34.jpeg	4	1	3	2	4	1.60E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	69	 c3.jpg	5	 s30.jpeg	 s26.jpeg	 s16.jpeg	 s31.jpeg	4	2	3	1	4	9.87E-01	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	70	 c24.jpg	5	 s21.jpeg	 s22.jpeg	 s23.jpeg	 s35.jpeg	4	1	2	3	4	9.05E-01	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	71	 c14.jpg	5	 s24.jpeg	 s18.jpeg	 s11.jpeg	 s31.jpeg	4	1	2	3	4	2.01E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		
+141	72	 c7.jpg	5	 s29.jpeg	 s15.jpeg	 s30.jpeg	 s33.jpeg	3	4	1	2	3	1.51E+00	3.71E+05	3.71E+05	5.00E-01	3.71E+05	3.71E+05	1
+ 	 																		

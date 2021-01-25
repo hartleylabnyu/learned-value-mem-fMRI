@@ -1,0 +1,31 @@
+sub	trial	stim	freqCond	truePair	foilLowFreq	foilHighFreq	foilNovel	truePairPos	foilLowFreqPos	foilHighFreqPos	foilNovelPos	memResp	memRT	memTrialStart	memTrialEnd	memTrialITI	memTrialITIStart	memTrialITIEnd	block
+141	1	 p12.jpg	1	 f3.jpg	 f13.jpg	 f28.jpg	 f8.jpg	1	4	3	2	2	1.67E+00	3.00E+00	3.72E+05	6	3.72E+05	3.72E+05	2
+141	2	 p5.jpg	1	 f2.jpg	 f17.jpg	 f27.jpg	 f9.jpg	1	4	3	2	4	2.42E+00	1.50E+01	3.72E+05	3.09E+00	3.72E+05	3.72E+05	2
+141	3	 p8.jpg	5	 f19.jpg	 f21.jpg	 f22.jpg	 f31.jpg	4	3	2	1	2	2.99E+00	2.41E+01	3.72E+05	3.82E+00	3.72E+05	3.72E+05	2
+141	4	 p24.jpg	1	 f23.jpg	 f25.jpg	 f19.jpg	 f31.jpg	2	1	4	3	3	1.70E+00	3.39E+01	3.72E+05	4.91E+00	3.72E+05	3.72E+05	2
+141	5	 p15.jpg	1	 f11.jpg	 f3.jpg	 f1.jpg	 f6.jpg	3	1	4	2	3	1.63E+00	4.48E+01	3.72E+05	2.73E+00	3.72E+05	3.72E+05	2
+141	6	 p17.jpg	1	 f21.jpg	 f12.jpg	 f14.jpg	 f33.jpg	2	1	4	3	3	1.75E+00	5.36E+01	3.72E+05	3.45E+00	3.72E+05	3.72E+05	2
+141	7	 p19.jpg	1	 f25.jpg	 f30.jpg	 f1.jpg	 f32.jpg	1	2	4	3	3	2.21E+00	6.30E+01	3.72E+05	4.55E+00	3.72E+05	3.72E+05	2
+141	8	 p13.jpg	5	 f24.jpg	 f21.jpg	 f15.jpg	 f7.jpg	1	2	3	4	1	2.57E+00	7.36E+01	3.72E+05	4.91E+00	3.72E+05	3.72E+05	2
+141	9	 p9.jpg	5	 f28.jpg	 f2.jpg	 f24.jpg	 f9.jpg	3	2	1	4	3	1.24E+00	8.45E+01	3.72E+05	3.45E+00	3.72E+05	3.72E+05	2
+141	10	 p6.jpg	5	 f18.jpg	 f25.jpg	 f16.jpg	 f6.jpg	2	4	1	3	2	2.22E+00	9.39E+01	3.72E+05	5.64E+00	3.72E+05	3.72E+05	2
+141	11	 p1.jpg	1	 f13.jpg	 f29.jpg	 f27.jpg	 f34.jpg	4	3	1	2	3	1.67E+00	1.06E+02	3.72E+05	4.18E+00	3.72E+05	3.72E+05	2
+141	12	 p11.jpg	5	 f14.jpg	 f30.jpg	 f26.jpg	 f34.jpg	1	4	3	2	1	3.44E+00	1.16E+02	3.72E+05	6	3.72E+05	3.72E+05	2
+141	13	 p20.jpg	1	 f17.jpg	 f11.jpg	 f19.jpg	 f8.jpg	3	1	2	4	1	2.84E+00	1.28E+02	3.72E+05	2.36E+00	3.72E+05	3.72E+05	2
+141	14	 p23.jpg	5	 f1.jpg	 f10.jpg	 f22.jpg	 f36.jpg	2	4	3	1	2	1.05E+00	1.36E+02	3.72E+05	2	3.72E+05	3.72E+05	2
+141	15	 p2.jpg	5	 f15.jpg	 f12.jpg	 f20.jpg	 f36.jpg	1	2	3	4	1	2.18E+00	1.44E+02	3.72E+05	4.55E+00	3.72E+05	3.72E+05	2
+141	16	 p18.jpg	1	 f30.jpg	 f3.jpg	 f20.jpg	 f7.jpg	1	3	4	2	3	1.92E+00	1.55E+02	3.72E+05	3.82E+00	3.72E+05	3.72E+05	2
+141	17	 p22.jpg	1	 f10.jpg	 f23.jpg	 f18.jpg	 f35.jpg	3	1	4	2	3	2.08E+00	1.64E+02	3.72E+05	5.27E+00	3.72E+05	3.72E+05	2
+141	18	 p7.jpg	5	 f26.jpg	 f23.jpg	 f18.jpg	 f5.jpg	1	2	3	4	1	1.68E+00	1.76E+02	3.72E+05	2.73E+00	3.72E+05	3.72E+05	2
+141	19	 p21.jpg	1	 f29.jpg	 f10.jpg	 f15.jpg	 f32.jpg	2	3	1	4	2	1.78E+00	1.84E+02	3.72E+05	2	3.72E+05	3.72E+05	2
+141	20	 p4.jpg	5	 f16.jpg	 f11.jpg	 f14.jpg	 f4.jpg	2	4	1	3	2	3.49E+00	1.92E+02	3.72E+05	2.36E+00	3.72E+05	3.72E+05	2
+141	21	 p10.jpg	5	 f22.jpg	 f17.jpg	 f28.jpg	 f4.jpg	4	3	1	2	4	3.71E+00	2.01E+02	3.72E+05	5.27E+00	3.72E+05	3.72E+05	2
+141	22	 p14.jpg	5	 f20.jpg	 f29.jpg	 f26.jpg	 f33.jpg	1	4	3	2	1	2.82E+00	2.12E+02	3.73E+05	3.09E+00	3.73E+05	3.73E+05	2
+141	23	 p16.jpg	1	 f12.jpg	 f2.jpg	 f24.jpg	 f5.jpg	2	1	3	4	1	1.81E+00	2.21E+02	3.73E+05	5.64E+00	3.73E+05	3.73E+05	2
+141	24	 p3.jpg	5	 f27.jpg	 f13.jpg	 f16.jpg	 f35.jpg	1	2	3	4	1	2.14E+00	2.33E+02	3.73E+05	4.18E+00	3.73E+05	3.73E+05	2
+141	0	 beginningITI	 	 	 	 	 	 	 	 	 	 	 	 	 	3	0.00E+00	3.72E+05	2
+0	 																		
+141	25	 endingITI	 	 	 	 	 	 	 	 	 	 	 	 	 	3	3.73E+05	3.73E+05	2
+0	 																		
+141	26	 endScreen	 	 	 	 	 	 	 	 	 	 	 	 	 	9	3.73E+05	3.73E+05	2
+ 	 																		

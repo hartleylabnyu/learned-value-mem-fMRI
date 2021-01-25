@@ -1,0 +1,1 @@
+sub	trial	stim	freqCond	truePair	foilLowFreq	foilHighFreq	foilNovel	truePairPos	foilLowFreqPos	foilHighFreqPos	foilNovelPos	memResp	memRT	memTrialStart	memTrialEnd	memTrialITI	memTrialITIStart	memTrialITIEnd	block	

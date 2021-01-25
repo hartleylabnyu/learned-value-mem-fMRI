@@ -1,0 +1,31 @@
+sub	trial	stim	freqCond	truePair	foilLowFreq	foilHighFreq	foilNovel	truePairPos	foilLowFreqPos	foilHighFreqPos	foilNovelPos	memResp	memRT	memTrialStart	memTrialEnd	memTrialITI	memTrialITIStart	memTrialITIEnd	block
+141	1	 c23.jpg	5	 s2.jpeg	 s17.jpeg	 s28.jpeg	 s5.jpeg	2	4	3	1	3	2.91E+00	3.00E+00	3.71E+05	6	3.71E+05	3.71E+05	1
+141	2	 c16.jpg	1	 s12.jpeg	 s18.jpeg	 s1.jpeg	 s32.jpeg	4	1	3	2	2	2.38E+00	1.50E+01	3.71E+05	4.55E+00	3.71E+05	3.71E+05	1
+141	3	 c20.jpg	5	 s23.jpeg	 s10.jpeg	 s25.jpeg	 s7.jpeg	2	1	4	3	2	2.97E+00	2.56E+01	3.71E+05	4.18E+00	3.71E+05	3.71E+05	1
+141	4	 c24.jpg	5	 s21.jpeg	 s22.jpeg	 s23.jpeg	 s35.jpeg	4	1	2	3	4	1.50E+00	3.57E+01	3.71E+05	5.27E+00	3.71E+05	3.71E+05	1
+141	5	 c19.jpg	1	 s18.jpeg	 s12.jpeg	 s24.jpeg	 s8.jpeg	1	3	4	2	1	2.00E+00	4.70E+01	3.71E+05	5.27E+00	3.71E+05	3.71E+05	1
+141	6	 c4.jpg	5	 s16.jpeg	 s12.jpeg	 s2.jpeg	 s34.jpeg	4	1	3	2	4	2.69E+00	5.83E+01	3.71E+05	4.55E+00	3.71E+05	3.71E+05	1
+141	7	 c18.jpg	1	 s20.jpeg	 s10.jpeg	 s23.jpeg	 s4.jpeg	1	2	3	4	1	1.88E+00	6.88E+01	3.71E+05	6	3.71E+05	3.71E+05	1
+141	8	 c5.jpg	5	 s27.jpeg	 s19.jpeg	 s28.jpeg	 s6.jpeg	2	1	3	4	2	2.00E+00	8.08E+01	3.71E+05	2.73E+00	3.71E+05	3.71E+05	1
+141	9	 c6.jpg	1	 s26.jpeg	 s20.jpeg	 s27.jpeg	 s8.jpeg	4	3	2	1	1	2.39E+00	8.96E+01	3.71E+05	2.73E+00	3.71E+05	3.71E+05	1
+141	10	 c9.jpg	5	 s25.jpeg	 s13.jpeg	 s21.jpeg	 s9.jpeg	4	2	1	3	4	1.73E+00	9.83E+01	3.71E+05	3.45E+00	3.71E+05	3.71E+05	1
+141	11	 c17.jpg	1	 s19.jpeg	 s22.jpeg	 s21.jpeg	 s9.jpeg	2	3	1	4	2	2.77E+00	1.08E+02	3.71E+05	2.36E+00	3.71E+05	3.71E+05	1
+141	12	 c2.jpg	1	 s22.jpeg	 s26.jpeg	 s11.jpeg	 s5.jpeg	1	3	4	2	3	2.91E+00	1.16E+02	3.71E+05	2	3.71E+05	3.71E+05	1
+141	13	 c22.jpg	5	 s28.jpeg	 s19.jpeg	 s16.jpeg	 s34.jpeg	2	4	3	1	2	1.63E+00	1.24E+02	3.71E+05	2	3.71E+05	3.71E+05	1
+141	14	 c11.jpg	1	 s15.jpeg	 s13.jpeg	 s25.jpeg	 s33.jpeg	4	2	3	1	2	2.35E+00	1.32E+02	3.71E+05	3.09E+00	3.71E+05	3.71E+05	1
+141	15	 c13.jpg	1	 s10.jpeg	 s15.jpeg	 s27.jpeg	 s36.jpeg	4	1	2	3	4	2.16E+00	1.41E+02	3.71E+05	4.91E+00	3.71E+05	3.71E+05	1
+141	16	 c21.jpg	1	 s14.jpeg	 s20.jpeg	 s1.jpeg	 s7.jpeg	2	4	3	1	2	2.86E+00	1.52E+02	3.71E+05	3.82E+00	3.71E+05	3.71E+05	1
+141	17	 c12.jpg	5	 s1.jpeg	 s14.jpeg	 s24.jpeg	 s32.jpeg	1	3	2	4	2	2.41E+00	1.62E+02	3.71E+05	5.64E+00	3.71E+05	3.71E+05	1
+141	18	 c8.jpg	1	 s3.jpeg	 s17.jpeg	 s29.jpeg	 s6.jpeg	1	2	4	3	4	2.46E+00	1.74E+02	3.71E+05	4.18E+00	3.71E+05	3.71E+05	1
+141	19	 c10.jpg	1	 s17.jpeg	 s3.jpeg	 s30.jpeg	 s35.jpeg	4	2	1	3	3	3.02E+00	1.84E+02	3.71E+05	5.64E+00	3.71E+05	3.71E+05	1
+141	20	 c1.jpg	1	 s13.jpeg	 s14.jpeg	 s2.jpeg	 s36.jpeg	3	1	2	4	4	2.26E+00	1.95E+02	3.71E+05	3.45E+00	3.71E+05	3.71E+05	1
+141	21	 c7.jpg	5	 s29.jpeg	 s15.jpeg	 s30.jpeg	 s33.jpeg	3	4	1	2	3	2.68E+00	2.05E+02	3.71E+05	3.09E+00	3.71E+05	3.71E+05	1
+141	22	 c3.jpg	5	 s30.jpeg	 s26.jpeg	 s16.jpeg	 s31.jpeg	4	2	3	1	4	1.50E+00	2.14E+02	3.71E+05	2.36E+00	3.71E+05	3.71E+05	1
+141	23	 c14.jpg	5	 s24.jpeg	 s18.jpeg	 s11.jpeg	 s31.jpeg	4	1	2	3	2	3.28E+00	2.22E+02	3.71E+05	3.82E+00	3.71E+05	3.71E+05	1
+141	24	 c15.jpg	5	 s11.jpeg	 s3.jpeg	 s29.jpeg	 s4.jpeg	2	4	3	1	2	3.26E+00	2.32E+02	3.71E+05	4.91E+00	3.71E+05	3.71E+05	1
+141	0	 beginningITI	 	 	 	 	 	 	 	 	 	 	 	 	 	3	0.00E+00	3.71E+05	1
+0	 																		
+141	25	 endingITI	 	 	 	 	 	 	 	 	 	 	 	 	 	3	3.71E+05	3.71E+05	1
+0	 																		
+141	26	 endScreen	 	 	 	 	 	 	 	 	 	 	 	 	 	9	3.71E+05	3.71E+05	1
+ 	 																		
