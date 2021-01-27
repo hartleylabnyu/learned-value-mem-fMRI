@@ -291,8 +291,7 @@ freqData %<>% mutate(freqAcc = case_when(freqAppearanceCount == 1 & freqTaskResp
                                          freqAppearanceCount > 1 & freqTaskResp == 1 ~ 0),
                      freqTrialType = case_when(freqAppearanceCount == 1 ~ "new",
                                                freqAppearanceCount > 1 ~ "old")) %>%
-  filter(is.na(freqAcc) == F) %>%
-  filter(freqTaskRT > .20)
+  filter(is.na(freqAcc) == F) 
 
 #compute mean response accuracy for old and new items per age group
 freqTaskAgeGroupMeans <- summarySE(freqData, "freqAcc", c("ageGroup", "freqTrialType"))
@@ -393,8 +392,7 @@ tab_model(freq.oldItems.model.stats)
 ```{r frequency task RTs plot}
 #include accurate trials only
 freqRTData <- freqData %>% 
-  filter(freqAcc == 1) %>%
-  filter(freqTaskRT > .2)
+  filter(freqAcc == 1) 
 
 #compute mean RT for each age group and appearance count
 freqTaskRTMeans <- summarySE(freqRTData, "freqTaskRT", c("freqAppearanceCount", "ageGroup"))
@@ -505,8 +503,7 @@ tab_model(freq.oldItems.RT.2.stats)
 ```{r frequency report histograms, fig.height = 4, fig.width = 8, dpi = 600}
 #filter NA responses 
 freqReports <- memData %>% 
-  filter(freqReport > 0) %>%
-  filter(freqReportRT > .20)
+  filter(freqReport > 0)
 
 #compute mean frequency responses for each condition
 freqReportMeans <- summarySE(freqReports, "freqReport", c("freqCond"))
@@ -594,10 +591,9 @@ tab_model(freqRep.2.stats)
 #save unfiltered memory data
 memData_unfiltered <- memData
 
-#filter out inaccurate trials
+#filter out missed trials
 memData <- memData %>%
-  filter(is.na(memAcc) == F) %>%
-  filter(memRT > .20)
+  filter(is.na(memAcc) == F) 
 
 #compute memory accuracy by frequency condition and age group
 mem.freqCond <- summarySE(memData, "memAcc", c("freqCond", "ageGroup"))
@@ -637,8 +633,8 @@ sub_stats_for_MRI <- memSubStats %>%
   select(sub, age, mem_diff, age_demean, mem_diff_demean)
 
 #save as .txt
-#write.table(sub_stats_for_MRI, file = "sub_mem_stats.txt", sep = "\t",
-#          row.names = F)
+write.table(sub_stats_for_MRI, file = "sub_mem_stats_jan27.txt", sep = "\t",
+          row.names = F)
 ```
 
 
@@ -1258,7 +1254,6 @@ membyRSBarPlot
 
 ### Model: Memory by repetition suppression and frequency reports
 ```{r memory by RS and freq reports}
-
 #----- Model 4: Do frequency reports and repetition suppression explain distinct sources of variance in memory? ----
 model4_data <- full_join(model2_data, model3_data, by = c("sub", "age", "IQ", "block", "stim", "phc_decrease")) %>%
   select(sub, age, IQ, block, stim, phc_decrease, freqReport, memAcc) %>%
