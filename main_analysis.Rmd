@@ -591,6 +591,10 @@ tab_model(freqRep.2.stats)
 # Associative memory
 ## Plot: Memory performance by frequency condition: Individual subject data
 ```{r memory accuracy individual subjects plot}
+#save unfiltered memory data
+memData_unfiltered <- memData
+
+#filter out inaccurate trials
 memData <- memData %>%
   filter(is.na(memAcc) == F) %>%
   filter(memRT > .20)
@@ -1066,12 +1070,14 @@ No.
 # Repetition suppression
 ```{r repetition suppression data processing}
 # Read in neural data
-RS_estimates <- read_csv("neural_data/RS_estimates.txt")
+RS_estimates <- read_csv("neural_data/RS_estimates.csv")
 
 #Combine mem data with RS data
 RS_estimates$sub <- as.factor(RS_estimates$sub)
 RS_estimates$block <- as.factor(RS_estimates$block)
-temp <- full_join(memData, RS_estimates, by = c("sub", "stim", "block")) %>%
+
+#combine RS data with memory data
+temp <- full_join(memData_unfiltered, RS_estimates, by = c("sub", "stim", "block")) %>%
   filter(freqCond == 5) %>%
   select(sub, age, ageGroup, IQ, block, stim, memAcc, freqReport, phc1, phc5, decrease) %>%
   rename(phc_decrease = decrease)
@@ -1126,9 +1132,26 @@ anova(model.1.1, model.1.2) #model with age squared fits better
 
 #display results
 model.1.2
-# There is a relationship between age^2 and repetition suppression.
+# Main effect of linear age
+# Main effect of quadratic age
 
 tab_model(model.1.2)
+```
+
+## Plot: Repetition suppression and age
+```{r RS age plot}
+#compute mean for each participant
+RS_means <- model1_data %>%
+  group_by(sub, age) %>%
+  summarize(mean_RS = mean(phc_decrease, na.rm = T))
+
+RS_age_plot <- ggplot(RS_means, aes(x = age, y = mean_RS)) +
+  geom_point(color = color1) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), color = color3, fill = color3) +
+  ylab("Mean Reptition Suppression") +
+  xlab("Age") +
+  kate.theme
+RS_age_plot
 ```
 
 
@@ -1148,14 +1171,14 @@ model2_data <- phc_data %>%
 
 # run model
 model.2.1 <- mixed(freqReport ~ phc_decrease_scaled * IQ_scaled * age_scaled + 
-                   (phc_decrease_scaled||sub), 
+                   (phc_decrease_scaled|sub), 
                  data = model2_data, 
                  method = "S",
                  control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
                  expand_re = T)
 
 model.2.2 <- mixed(freqReport ~ phc_decrease_scaled * IQ_scaled * (age_scaled + age_squared_scaled) + 
-                     (phc_decrease_scaled||sub), 
+                     (phc_decrease_scaled|sub), 
                    data = model2_data, 
                    method = "S",
                    control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
@@ -1185,19 +1208,29 @@ model3_data <- phc_data %>%
     droplevels()
 
 # run model
-model.3 <- mixed(memAcc ~ phc_decrease_scaled * IQ_scaled * (age_scaled + age_squared_scaled) + 
-                   (phc_decrease_scaled ||sub), 
+model.3.1 <- mixed(memAcc ~ phc_decrease_scaled * IQ_scaled * age_scaled + 
+                   (phc_decrease_scaled | sub), 
                  data = model3_data,
                  family = "binomial",
                  method = "LRT",
                  control = glmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
                  expand_re = T)
 
+model.3.2 <- mixed(memAcc ~ phc_decrease_scaled * IQ_scaled * (age_scaled + age_squared_scaled) + 
+                   (phc_decrease_scaled | sub), 
+                 data = model3_data,
+                 family = "binomial",
+                 method = "LRT",
+                 control = glmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
+                 expand_re = T)
+
+anova(model.3.1, model.3.2) #model with just age squared fits better
+
 #display results
-model.3
+model.3.2
 # Main effect of PHC decrease
 
-tab_model(model.3)
+tab_model(model.3.2)
 ```
 
 ## Plot: Memory accuracy by repetition suppression
@@ -1238,15 +1271,25 @@ model4_data <- full_join(model2_data, model3_data, by = c("sub", "age", "IQ", "b
   droplevels()
                       
 # run model
-model.4 <- mixed(memAcc ~ (age_scaled + age_squared_scaled) * IQ_scaled * phc_decrease_scaled * freq_report_scaled  + (phc_decrease_scaled * freq_report_scaled|sub), 
+model.4.1 <- mixed(memAcc ~ age_scaled * IQ_scaled * phc_decrease_scaled * freq_report_scaled  + (phc_decrease_scaled * freq_report_scaled|sub), 
                  data = model4_data,
                  family = "binomial",
                  method = "LRT",
                  control = glmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
                  expand_re = T)
 
-#display results
-model.4
+model.4.2 <- mixed(memAcc ~ (age_scaled + age_squared_scaled) * IQ_scaled * phc_decrease_scaled * freq_report_scaled  + (phc_decrease_scaled * freq_report_scaled|sub), 
+                 data = model4_data,
+                 family = "binomial",
+                 method = "LRT",
+                 control = glmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
+                 expand_re = T)
 
-tab_model(model.4)
+#compare model fit
+anova(model.4.1, model.4.2) #model with age squared fits better
+
+#display results
+model.4.2
+
+tab_model(model.4.2)
 ```
