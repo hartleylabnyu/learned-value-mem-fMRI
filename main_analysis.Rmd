@@ -882,15 +882,30 @@ summary(freq_pfc_model.age.2)
 PFC activity increases non-linearly with age.
 
 ### Plot: PFC modulation by age
-```{r PFC age plot}
+```{r PFC age plot, fig.height = 4, fig.width = 4}
 pfc_age_plot <- ggplot(mem_means, aes(x = age, y = freq_pfc)) +
   geom_point(color = color3) + 
   geom_smooth(method = "lm", formula = y ~ poly(x,2), color = color1, fill = color1) +
   xlab("Age") +
-  ylab("PFC Modulation") +
+  ylab("PFC Activity (High- vs. Low-Value)") +
   kate.theme
 pfc_age_plot
 ```
+
+```{r PFC age plot residuals, fig.height = 4, fig.width = 4}
+pfc_iq_model <- lm(freq_pfc ~ IQScaled, mem_means)
+model_resid <- data.frame(residuals(pfc_iq_model))
+temp <- bind_cols(mem_means, model_resid)
+
+pfc_age_resid_plot <- ggplot(temp, aes(x = age, y = residuals.pfc_iq_model.)) +
+  geom_point(color = color3) + 
+  geom_smooth(method = "lm", formula = y ~ poly(x,2), color = color1, fill = color1) +
+  xlab("Age") +
+  ylab("PFC Activity (High- vs. Low-Value)") +
+  kate.theme
+pfc_age_resid_plot
+```
+
 
 
 ### Mediation: Does PFC modulation mediate the relation between age and memory difference scores?
@@ -1144,11 +1159,28 @@ RS_means <- model1_data %>%
 RS_age_plot <- ggplot(RS_means, aes(x = age, y = mean_RS)) +
   geom_point(color = color1) +
   geom_smooth(method = "lm", formula = y ~ poly(x, 2), color = color3, fill = color3) +
-  ylab("Mean Reptition Suppression") +
+  ylab("Mean Repetition Suppression") +
   xlab("Age") +
   kate.theme
 RS_age_plot
 ```
+
+```{r RS box plots, fig.height = 4, fig.width = 5}
+temp <- RS_data_all %>%
+  filter(phc_decrease > phc_outlier_min) %>%
+  filter(phc_decrease < phc_outlier_max) %>% 
+  pivot_longer(cols = c(phc1, phc5), names_to = "repetition", names_prefix = "phc", values_to = "activity")
+
+RS_age_group_plot <- ggplot(temp, aes(x = ageGroup, color = repetition, y = activity)) +
+  geom_boxplot(aes(fill = repetition), alpha = .3) +
+  scale_fill_manual(values = c(color1, color3), name = "Repetition") +
+  scale_color_manual(values = c(color1, color3), name = "Repetition") +
+  ylab("Neural Activity") +
+  xlab("Age Group") +
+  kate.theme
+RS_age_group_plot
+```
+
 
 
 ## Model: Repetition suppression and frequency reports
