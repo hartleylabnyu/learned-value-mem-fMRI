@@ -1,7 +1,7 @@
 ---
 title: "Developmental change in prefrontal cortex recruitment supports the emergence of value-guided memory"
 author: "Kate Nussenbaum"
-date: "1/26/21"
+date: "July 25, 2021"
 output:
   html_document:
     df_print: paged
@@ -40,16 +40,18 @@ library(glue)
 library(readxl)
 library(pander)
 library(Rmisc)
-library(pander)
 library(mediation)
-source("scripts/helperFunctions.R") #Note: Currently loads tidyverse, plotting theme, age groups, scale_this function, and se function
 library(sjPlot)
+source("scripts/twolines.R")
+source("scripts/helperFunctions.R") #Note: Currently loads tidyverse, plotting theme, age groups, scale_this function, and se function
+
 
 #deal with conflicting functions
 select <- dplyr::select
 rename <- dplyr::rename
 mutate <- dplyr::mutate
 filter <- dplyr::filter
+summarize <- dplyr::summarize
 ```
 
 
@@ -176,6 +178,7 @@ memData <- full_join(memData, subList, by = c("sub")) %>%
 
 # Participant stats
 ```{r sub stats}
+#make plot
 subStatsPlot <-
   ggplot(subList, aes(x = age, fill = as.factor(gender))) +
   geom_histogram(boundary = 1,
@@ -256,7 +259,7 @@ pander(num_subs)
 ### Should quadratic age be included in the model?
 ```{r age iq relation quadratic test}
 subList$age_scaled <- scale_this(subList$age)
-subList$age_squared_scaled <- scale_this((subList$age)^2)
+subList$age_squared_scaled <- scale_this(subList$age^2)
 
 age.IQ <- lm(IQ ~ age_scaled, data = subList)
 age_sq.IQ <- lm(IQ ~ age_scaled + age_squared_scaled, data = subList)
@@ -284,7 +287,7 @@ There is a relation between age and IQ in the dataset. We will include IQ as an 
 # Frequency-learning
 ## Plot: Response accuracy by age group and appearance count
 ```{r frequency task accuracy}
-#compute accuracy
+#compute frequency accuracy
 freqData %<>% mutate(freqAcc = case_when(freqAppearanceCount == 1 & freqTaskResp == 1 ~ 1,
                                          freqAppearanceCount > 1 & freqTaskResp == 2 ~ 1,
                                          freqAppearanceCount == 1 & freqTaskResp == 2 ~ 0,
@@ -292,6 +295,7 @@ freqData %<>% mutate(freqAcc = case_when(freqAppearanceCount == 1 & freqTaskResp
                      freqTrialType = case_when(freqAppearanceCount == 1 ~ "new",
                                                freqAppearanceCount > 1 ~ "old")) %>%
   filter(is.na(freqAcc) == F) 
+#freqData$freqAcc
 
 #compute mean response accuracy for old and new items per age group
 freqTaskAgeGroupMeans <- summarySE(freqData, "freqAcc", c("ageGroup", "freqTrialType"))
@@ -323,31 +327,24 @@ freqDataNewItems$ageScaled <- scale_this(freqDataNewItems$age)
 freqDataNewItems$ageSquaredScaled <- scale_this(freqDataNewItems$age^2)
 freqDataNewItems$IQScaled <- scale_this(freqDataNewItems$IQ)
 
-freq.newItems.model <- mixed(freqAcc ~ ageScaled * IQScaled + (1|sub), 
+freq.newItems.model <- mixed(freqAcc ~ ageScaled * IQScaled + (1|sub) + (1|stim), 
                              data = freqDataNewItems, family = binomial, method = "LRT", 
                              control = glmerControl(optCtrl=list(maxfun=1e6)), 
-                             expand_re = T, 
-                             return = "merMod")
+                             expand_re = T)
 
-freq.newItems.model.2 <- mixed(freqAcc ~ (ageScaled + ageSquaredScaled) * IQScaled + (1|sub), 
+freq.newItems.model.2 <- mixed(freqAcc ~ (ageScaled + ageSquaredScaled) * IQScaled + (1|sub) + (1|stim), 
                                data = freqDataNewItems, family = binomial, method = "LRT", 
                                control = glmerControl(optCtrl=list(maxfun=1e6)), 
-                               expand_re = T, 
-                               return = "merMod")
+                               expand_re = T)
+
+#Note: models do not converge with random stimulus slopes
 
 #compare models
 anova(freq.newItems.model, freq.newItems.model.2) #model with just age fits better
 
 #print stats of best-fitting model
-freq.newItems.model.stats <- mixed(freqAcc ~ ageScaled * IQScaled + (1|sub), 
-                                   data = freqDataNewItems, family = binomial, method = "LRT", 
-                                   control = glmerControl(optCtrl=list(maxfun=1e6)), 
-                                   expand_re = T)
-freq.newItems.model.stats
-# main effect of age
-# main effect of IQ
-
-tab_model(freq.newItems.model.stats)
+freq.newItems.model
+tab_model(freq.newItems.model)
 ```
 
 ## Model: Frequency learning response accuracy - repeated items
@@ -359,33 +356,28 @@ freqDataOldItems$ageSquaredScaled <- scale_this(freqDataOldItems$age^2)
 freqDataOldItems$IQScaled <- scale_this(freqDataOldItems$IQ)
 freqDataOldItems$appearanceCountScaled <- scale_this(freqDataOldItems$freqAppearanceCount)
 
-freq.oldItems.model <- mixed(freqAcc ~ appearanceCountScaled * ageScaled * IQScaled + (appearanceCountScaled|sub), 
-                             data = freqDataOldItems, family = binomial, method = "LRT", 
-                             control = glmerControl(optCtrl=list(maxfun=1e6), optimizer = "bobyqa"), 
-                             expand_re = T, 
-                             return = "merMod")
-
-freq.oldItems.model.2 <- mixed(freqAcc ~ appearanceCountScaled * (ageScaled + ageSquaredScaled) * IQScaled + (appearanceCountScaled|sub), 
-                               data = freqDataOldItems, family = binomial, method = "LRT", 
-                               control = glmerControl(optCtrl=list(maxfun=1e6), optimizer = "bobyqa"), 
-                               expand_re = T,
-                               return = "merMod")
-
-#compare models
-anova(freq.oldItems.model, freq.oldItems.model.2) #model with just age fits better
-
-#display stats for best fitting model
-freq.oldItems.model.stats <- mixed(freqAcc ~ appearanceCountScaled * ageScaled * IQScaled + (appearanceCountScaled|sub), 
+freq.oldItems.model <- mixed(freqAcc ~ appearanceCountScaled * ageScaled * IQScaled + (appearanceCountScaled|sub) + (1|stim), 
                              data = freqDataOldItems, family = binomial, method = "LRT", 
                              control = glmerControl(optCtrl=list(maxfun=1e6), optimizer = "bobyqa"), 
                              expand_re = T)
 
-freq.oldItems.model.stats
+freq.oldItems.model.2 <- mixed(freqAcc ~ appearanceCountScaled * (ageScaled + ageSquaredScaled) * IQScaled + (appearanceCountScaled|sub) + (1|stim), 
+                               data = freqDataOldItems, family = binomial, method = "LRT", 
+                               control = glmerControl(optCtrl=list(maxfun=1e6), optimizer = "bobyqa"), 
+                               expand_re = T)
+
+#Note: models do not converge with random stimulus slopes
+
+#compare models
+anova(freq.oldItems.model, freq.oldItems.model.2) #model with just age fits better
+
+#print stats of best-fitting model
+freq.oldItems.model
+tab_model(freq.oldItems.model)
+# main effect of appearance count
 # main effect of age
 # main effect of IQ
-# main effect of appearance count
 # age x appearance count interaction
-tab_model(freq.oldItems.model.stats)
 ```
 
 ## Plot: Frequency learning reaction times by appearance count
@@ -399,26 +391,13 @@ freqTaskRTMeans <- summarySE(freqRTData, "freqTaskRT", c("freqAppearanceCount", 
 
 #plot
 freqRTPlot <-ggplot(freqTaskRTMeans, aes(x = freqAppearanceCount, y = freqTaskRT, color = ageGroup, group = ageGroup)) +
-  geom_line() +
+  geom_line(size = 1) +
   geom_errorbar(aes(ymin = freqTaskRT - se, ymax = freqTaskRT + se), width = .1) +
   scale_color_manual(values = c(color1, color2, color3), name = "Age Group") +
-  ylab("Frequency Response RT") +
+  ylab("Frequency Response RT (seconds)") +
   xlab("Appearance Count") +
   kate.theme
 freqRTPlot
-
-#plot with continuous age
-freqTaskRTSubMeans <- summarySE(freqRTData, "freqTaskRT", c("freqAppearanceCount", "age"))
-
-freqRTAgePlot <- ggplot(freqTaskRTSubMeans, aes(x = age, y = freqTaskRT, color = factor(freqAppearanceCount), fill = factor(freqAppearanceCount), group = freqAppearanceCount)) +
-  geom_point() + 
-  geom_smooth(method = "lm", formula = y ~ poly(x, 2)) +
-  scale_color_brewer(name = "Item Repetition") +
-  scale_fill_brewer(name = "Item Repetition") +
-  ylab("Frequency-learning RT") +
-  xlab("Age") +
-  kate.theme
-freqRTAgePlot
 ```
 
 ## Model: Frequency learning reaction times - new items
@@ -430,31 +409,26 @@ freqRTDataNewItems$ageScaled <- scale_this(freqRTDataNewItems$age)
 freqRTDataNewItems$ageSquaredScaled <- scale_this(freqRTDataNewItems$age^2)
 freqRTDataNewItems$IQScaled <- scale_this(freqRTDataNewItems$IQ)
 
-freq.newItems.RT <- mixed(freqTaskRT ~  ageScaled * IQScaled + (1|sub), 
-                          data = freqRTDataNewItems, method = "S", 
-                          control = lmerControl(optCtrl=list(maxfun=1e6), optimizer = "bobyqa"), 
-                          expand_re = T, return = "merMod")
-
-freq.newItems.RT.2 <- mixed(freqTaskRT ~  (ageScaled + ageSquaredScaled) * IQScaled + (1|sub), 
-                            data = freqRTDataNewItems, method = "S", 
-                            control = lmerControl(optCtrl=list(maxfun=1e6), optimizer = "bobyqa"), 
-                            expand_re = T, return = "merMod")
-
-#compare models
-anova(freq.newItems.RT, freq.newItems.RT.2) #model with age squared fits better
-
-#display stats for best fitting model
-freq.newItems.RT.2.stats <- mixed(freqTaskRT ~  (ageScaled + ageSquaredScaled) * IQScaled + (1|sub), 
-                          data = freqRTDataNewItems, method = "S", 
+freq.newItems.RT <- mixed(freqTaskRT ~  ageScaled * IQScaled + (1|sub) + (ageScaled * IQScaled|stim), 
+                          data = freqRTDataNewItems, 
+                          method = "S", 
                           control = lmerControl(optCtrl=list(maxfun=1e6), optimizer = "bobyqa"), 
                           expand_re = T)
-freq.newItems.RT.2.stats
-#main effect of age
-#main effect of quadratic age
-# age x IQ interaction
-# quadratic age x IQ interaction
 
-tab_model(freq.newItems.RT.2.stats)
+freq.newItems.RT.2 <- mixed(freqTaskRT ~  (ageScaled + ageSquaredScaled) * IQScaled + (1|sub) + ((ageScaled + ageSquaredScaled)* IQScaled|stim),
+                            data = freqRTDataNewItems, 
+                            method = "S", 
+                            control = lmerControl(optCtrl=list(maxfun=1e6), optimizer = "bobyqa"), 
+                            expand_re = T)
+
+#compare models
+anova(freq.newItems.RT, freq.newItems.RT.2) #model with just age fits better
+
+#display stats for best fitting model
+freq.newItems.RT
+tab_model(freq.newItems.RT)
+#main effect of age
+
 ```
 
 ## Model: Frequency learning reaction times - repeated items
@@ -467,34 +441,28 @@ freqRTDataOldItems$ageSquaredScaled <- scale_this(freqRTDataOldItems$age^2)
 freqRTDataOldItems$IQScaled <- scale_this(freqRTDataOldItems$IQ)
 freqRTDataOldItems$appearanceCountScaled <- scale_this(freqRTDataOldItems$freqAppearanceCount)
 
-freq.oldItems.RT.model <- mixed(freqTaskRT ~  ageScaled * IQScaled * appearanceCountScaled + (appearanceCountScaled|sub), 
-                          data = freqRTDataOldItems, method = "S", 
-                          control = lmerControl(optCtrl=list(maxfun=1e6), optimizer = "bobyqa"), 
-                          expand_re = T, 
-                          return = "merMod")
-
-freq.oldItems.RT.model.2 <- mixed(freqTaskRT ~  (ageScaled + ageSquaredScaled) * IQScaled * appearanceCountScaled +  (appearanceCountScaled|sub), 
-                            data = freqRTDataOldItems, method = "S", 
-                            control = lmerControl(optCtrl=list(maxfun=1e6), optimizer = "bobyqa"),
-                            expand_re = T, 
-                            return = "merMod")
-
-#compare models
-anova(freq.oldItems.RT.model, freq.oldItems.RT.model.2) #model with age^2 fits better
-
-#display stats for best-fitting model
-freq.oldItems.RT.2.stats <- mixed(freqTaskRT ~  (ageScaled + ageSquaredScaled) * IQScaled * appearanceCountScaled + (appearanceCountScaled|sub), 
-                          data = freqRTDataOldItems, method = "S", 
+freq.oldItems.RT.model <- mixed(freqTaskRT ~  ageScaled * IQScaled * appearanceCountScaled + (appearanceCountScaled|sub) + (ageScaled + IQScaled + appearanceCountScaled|stim) , 
+                          data = freqRTDataOldItems, 
+                          method = "S", 
                           control = lmerControl(optCtrl=list(maxfun=1e6), optimizer = "bobyqa"), 
                           expand_re = T)
-freq.oldItems.RT.2.stats
-# main effect of age
-# main effect of IQ
-# main effect of quadratic age
-# main effect of appearance count
-# quadratic age x IQ interaction
 
-tab_model(freq.oldItems.RT.2.stats)
+freq.oldItems.RT.model.2 <- mixed(freqTaskRT ~  (ageScaled + ageSquaredScaled) * IQScaled * appearanceCountScaled +  (appearanceCountScaled|sub) + ((ageScaled + ageSquaredScaled) + IQScaled + appearanceCountScaled|stim), 
+                            data = freqRTDataOldItems, 
+                            method = "S", 
+                            control = lmerControl(optCtrl=list(maxfun=1e6), optimizer = "bobyqa"),
+                            expand_re = T)
+
+#Note: models do not converge w/ interactions in the random slopes
+
+#compare models
+anova(freq.oldItems.RT.model, freq.oldItems.RT.model.2) #model with age fits better
+
+#display stats for best-fitting model
+freq.oldItems.RT.model
+tab_model(freq.oldItems.RT.model)
+# main effect of age
+# main effect of appearance count
 ```
 
 
@@ -523,6 +491,7 @@ freqRespHist
 
 ## Plot: Frequency report error magnitudes
 ```{r freq rep error plot}
+#compute frequency report error magnitude (absolute value)
 freqReports %<>% mutate(rep_error_mag = abs(freqReport - freqCond)) 
 
 #compute mean freq_resp_error per subject
@@ -556,32 +525,28 @@ freqReports$ageSquaredScaled <- scale_this(freqReports$age^2)
 freqReports$IQScaled <- scale_this(freqReports$IQ)
 freqReports$freqCond <- as.factor(freqReports$freqCond)
 
-freqRep.model <- mixed(rep_error_mag ~ ageScaled * IQScaled *freqCond + (freqCond|sub),
-                 data = freqReports, method = "S", 
-                 control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
-                 expand_re = T,
-                 return = "merMod")
-
-freqRep.2.model <- mixed(rep_error_mag ~ (ageScaled +ageSquaredScaled)* IQScaled *freqCond + (freqCond|sub),
-                 data = freqReports, method = "S", 
-                 control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
-                 expand_re = T,
-                 return = "merMod")
-
-#compare models
-anova(freqRep.model, freqRep.2.model) #model with age squared fits better
-
-#display stats from best-fitting model
-freqRep.2.stats <- mixed(rep_error_mag ~ (ageScaled + ageSquaredScaled)* IQScaled *freqCond + (freqCond|sub),
-                 data = freqReports, method = "S", 
+freqRep.model <- mixed(rep_error_mag ~ ageScaled * IQScaled *freqCond + (freqCond||sub) + (ageScaled * IQScaled * freqCond||stim),
+                 data = freqReports, 
+                 method = "S", 
                  control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
                  expand_re = T)
-freqRep.2.stats
-# main effect of age
-# main effect of quadratic age
-# main effect of IQ
 
-tab_model(freqRep.2.stats)
+freqRep.2.model <- mixed(rep_error_mag ~ (ageScaled +ageSquaredScaled)* IQScaled *freqCond + (freqCond||sub) + ((ageScaled + ageSquaredScaled) * IQScaled * freqCond||stim),
+                 data = freqReports, 
+                 method = "S", 
+                 control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
+                 expand_re = T)
+
+#Note: Model w/ correlations between random slopes and intercepts did not converge
+
+#compare models
+anova(freqRep.model, freqRep.2.model) #model with age fits better
+
+#display stats from best-fitting model
+freqRep.model
+tab_model(freqRep.model)
+# main effect of age
+# main effect of IQ
 ```
 
 
@@ -633,8 +598,8 @@ sub_stats_for_MRI <- memSubStats %>%
   select(sub, age, mem_diff, age_demean, mem_diff_demean)
 
 #save as .txt
-write.table(sub_stats_for_MRI, file = "sub_mem_stats_jan27.txt", sep = "\t",
-          row.names = F)
+#write.table(sub_stats_for_MRI, file = "sub_mem_stats.txt", sep = "\t",
+#          row.names = F)
 ```
 
 
@@ -642,10 +607,12 @@ write.table(sub_stats_for_MRI, file = "sub_mem_stats_jan27.txt", sep = "\t",
 ```{r memory accuracy continuous age plot}
 # plot memory test accuracy as a function of continuous age
 memAccPlot <- ggplot(mem.freqCond.sub, aes(x = age, y = memAcc, color = as.factor(freqCond))) +
-  
-  geom_point() +
+  geom_point(aes(shape = as.factor(freqCond))) +
+  geom_line(aes(group=sub), color = "black", size = .15) +
   geom_smooth(formula = y ~ poly(x,2), method = lm, aes(fill = as.factor(freqCond))) +
+  geom_hline(yintercept = .25, linetype = "dashed") +
   coord_cartesian(ylim = c(0, 1)) +
+  scale_shape_manual(values = c(16, 17), name = "Frequency Condition") +
   scale_color_manual(values = c(color1, color3), name = "Frequency Condition") +
   scale_fill_manual(values = c(color1, color3), name = "Frequency Condition") +
   xlab("Age") +
@@ -662,28 +629,61 @@ memData$ageScaled <- scale_this(memData$age)
 memData$ageSquaredScaled <- scale_this(memData$age^2)
 memData$IQScaled <- scale_this(memData$IQ)
 
-mem.model <- mixed(memAcc ~ freqCond * ageScaled * IQScaled + (freqCond|sub), 
-                   family = "binomial", method = "LRT", 
+mem.model <- mixed(memAcc ~ freqCond * ageScaled * IQScaled + (freqCond||sub) + (freqCond + IQScaled + ageScaled|| stim), 
+                   family = "binomial", 
+                   method = "LRT", 
                    data = memData, 
                    control = glmerControl(optimizer = "bobyqa", optCtrl=list(maxfun=1e6)), 
-                   expand_re = T,
-                   return = "merMod")
+                   expand_re = T)
 
-mem.model.2 <- mixed(memAcc ~ freqCond * IQScaled * (ageScaled + ageSquaredScaled) + (freqCond|sub), 
-                     family = "binomial", method = "LRT", 
+mem.model.2 <- mixed(memAcc ~ freqCond * IQScaled * (ageScaled + ageSquaredScaled)  + (freqCond||sub) + (freqCond + IQScaled + (ageScaled + ageSquaredScaled)|| stim), 
+                     family = "binomial", 
+                     method = "LRT", 
                      data = memData, 
                      control = glmerControl(optimizer = "bobyqa", optCtrl=list(maxfun=1e6)),
-                     return = "merMod")
+                     expand_re = T)
+
+#Note: Models w/ random slopes in stimulus term did not converge
 
 #compare models
 anova(mem.model, mem.model.2) # model w/ age^2 fits better
 
 #display stats of best-fitting model
-mem.2.stats <- mixed(memAcc ~ freqCond * IQScaled * (ageScaled + ageSquaredScaled) + (freqCond|sub), 
-                     family = "binomial", method = "LRT", 
-                     data = memData, 
+mem.model.2
+tab_model(mem.model.2)
+# main effect of frequency condition
+# main effect of IQ
+# main effect of age
+# main effect of quadratic age
+# age x frequency condition interaction
+# quadratic age x frequency condition interaction
+```
+
+## Associative memory control analyses
+### Model: Memory performance by frequency condition: remove people who performed below chance
+```{r memory accuracy model below chance}
+belowChanceSubs <- memData %>%
+  group_by(sub) %>%
+  summarize(meanMemAcc = mean(memAcc, na.rm = T)) %>%
+  filter(meanMemAcc <= .25)
+#152 and 154
+
+memDataF <- memData %>%
+  filter(sub != 152 & sub != 154)
+
+memDataF$freqCond <- as.factor(memDataF$freqCond)
+memDataF$ageScaled <- scale_this(memDataF$age)
+memDataF$ageSquaredScaled <- scale_this(memDataF$age^2)
+memDataF$IQScaled <- scale_this(memDataF$IQ)
+
+#display stats of best-fitting model
+mem.2.F.stats <- mixed(memAcc ~ freqCond * IQScaled * (ageScaled + ageSquaredScaled) + (freqCond||sub)+ (freqCond + (ageScaled + ageSquaredScaled) + IQScaled|| stim),  
+                     family = "binomial", 
+                     method = "LRT", 
+                     data = memDataF, 
+                     expand_re = T,
                      control = glmerControl(optimizer = "bobyqa", optCtrl=list(maxfun=1e6)))
-mem.2.stats
+mem.2.F.stats
 # main effect of age
 # main effect of quadratic age
 # main effect of IQ
@@ -691,9 +691,137 @@ mem.2.stats
 # age x frequency condition interaction
 # quadratic age x frequency condition interaction
 
-tab_model(mem.2.stats)
+tab_model(mem.2.F.stats)
 ```
 
+### Model: Memory performance by frequency condition: block order effects
+```{r memory accuracy model with block}
+memData$block <- as.factor(memData$block)
+
+#test effects of block
+mem.2.block.stats <- mixed(memAcc ~ freqCond * IQScaled * (ageScaled + ageSquaredScaled) * block + (freqCond+block||sub) + (freqCond + IQScaled + (ageScaled + ageSquaredScaled) + block|| stim),  
+                     family = "binomial", 
+                     method = "LRT", 
+                     data = memData, 
+                     expand_re = T,
+                     control = glmerControl(optimizer = "bobyqa", optCtrl=list(maxfun=1e6)))
+
+#Note: model does not converge w/ interactions in REs
+
+tab_model(mem.2.block.stats)
+mem.2.block.stats
+# main effect of age
+# main effect of quadratic age
+# main effect of IQ
+# main effect of frequency condition
+# age x frequency condition interaction
+# quadratic age x frequency condition interaction
+```
+
+### Model: Memory performance by frequency condition: block type effects
+```{r memory with block type}
+
+#determine block type
+memData %<>% mutate(block_type = case_when(grepl("c", stim) ~ "c",
+                                grepl("p", stim) ~ "p"))
+
+#test effects of block type
+mem.2.block_type <- mixed(memAcc ~ freqCond * IQScaled * (ageScaled + ageSquaredScaled) * block_type + (block_type + freqCond||sub) + (freqCond + IQScaled + (ageScaled + ageSquaredScaled) || stim),  
+                     family = "binomial", 
+                     method = "LRT", 
+                     data = memData, 
+                     expand_re = T,
+                     control = glmerControl(optimizer = "bobyqa", optCtrl=list(maxfun=1e6)))
+
+
+#Note: model does not converge w/ interactions in REs
+
+#display results
+mem.2.block_type
+tab_model(mem.2.block_type)
+```
+
+### Model: Memory performance by frequency condition - two-lines test
+```{r memory accuracy model two lines}
+#recode factors for model
+memData$freqCond <- factor(memData$freqCond, levels = c("5", "1"))
+
+#reverse code frequency so that it is more intuitive
+mem.model.noage <- mixed(memAcc ~ freqCond * IQScaled + (freqCond||sub) + (freqCond + IQScaled|| stim), 
+                   family = "binomial", method = "LRT", 
+                   data = memData, 
+                   control = glmerControl(optimizer = "bobyqa", optCtrl=list(maxfun=1e6)), 
+                   expand_re = T,
+                   return = "merMod")
+
+#extract REs and put into data frame
+REs <- ranef(mem.model.noage)
+REs <- as.data.frame(REs) %>% 
+  rename(sub = grp, val = condval) %>%
+  filter(term != "(Intercept)") %>%
+  select(sub, val)
+  
+#combine REs with subject ages
+memREs <- full_join(REs, memSubStats, by = c("sub"))
+
+# run two-lines test
+mem_RE_two_lines_test <- twolines(val ~ age, data = memREs)
+
+#recode factors for rest of analyses
+memData$freqCond <- factor(memData$freqCond, levels = c("1", "5"))
+```
+
+
+### Model: Memory performance by frequency condition w/ frequency-learning covariates
+```{r memory acc covariates computation}
+#for each subject, compute frequency learning accuracy and frequency learning accuracy for 5th appearance of repeated items
+
+subFreqAcc <- freqData %>%
+  group_by(sub) %>%
+  summarize(freqAcc = mean(freqAcc, na.rm = T))
+
+subLastFreqAcc <- freqData %>%
+  filter(freqAppearanceCount == 5) %>%
+  group_by(sub) %>%
+  summarize(freqLastRepAcc = mean(freqAcc, na.rm = T))
+
+subFreqAcc <- full_join(subFreqAcc, subLastFreqAcc, by = c("sub"))
+memData <- full_join(memData, subFreqAcc, by = c("sub"))
+  
+#for each subject, compute mean frequency error report magnitudes
+subFreqRepError <- freqReports %>%
+  group_by(sub) %>%
+  summarize(freqErrorMag = mean(rep_error_mag, na.rm = T))
+
+memData <- full_join(memData, subFreqRepError, by = c("sub"))
+```
+
+```{r memory accuracy model with covariates}
+memData$freqCond <- as.factor(memData$freqCond)
+memData$ageScaled <- scale_this(memData$age)
+memData$ageSquaredScaled <- scale_this(memData$age^2)
+memData$IQScaled <- scale_this(memData$IQ)
+memData$freqErrorMagScaled <- scale_this(memData$freqErrorMag)
+memData$freqLastRepAccScaled <- scale_this(memData$freqLastRepAcc)
+memData$freqAccScaled <- scale_this(memData$freqAcc)
+
+
+#display stats 
+mem.cov.2.stats <- mixed(memAcc ~ freqCond * IQScaled * (ageScaled + ageSquaredScaled) + freqErrorMagScaled + freqLastRepAccScaled + freqAccScaled + (freqCond||sub) + (freqCond + (ageScaled + ageSquaredScaled) + IQScaled|| stim),  
+                     family = "binomial", 
+                     method = "LRT", 
+                     data = memData, 
+                     expand_re = T,
+                     control = glmerControl(optimizer = "bobyqa", optCtrl=list(maxfun=1e6)))
+mem.cov.2.stats 
+# main effect of frequency condition
+# main effect of IQ
+# main effect of frequency error magnitude
+# age x frequency condition interaction
+# quadratic age x frequency condition interaction
+
+tab_model(mem.cov.2.stats)
+```
 
 ## Plot: Memory performance by reported frequency
 ```{r memory accuracy by reported frequency plot, fig.height = 3, fig.width = 8}
@@ -713,9 +841,7 @@ membyFreqReportBarPlot <- ggplot(mem.freqReport, aes(x = as.factor(freqReport), 
   xlab("Frequency Report") +
   kate.theme
 membyFreqReportBarPlot
-
 ```
-
 
 ## Model: Memory performance by reported frequency
 ```{r freq mem model}
@@ -727,45 +853,43 @@ memFreqData$ageScaled <- scale_this(memFreqData$age)
 memFreqData$ageSquaredScaled <- scale_this(memFreqData$age^2)
 memFreqData$IQScaled <- scale_this(memFreqData$IQ)
 
-mem.freq.model <- mixed(memAcc ~ freqReportScaled * ageScaled * IQScaled  + (freqReportScaled|sub), 
-                        family = "binomial", method = "LRT", 
+mem.freq.model <- mixed(memAcc ~ freqReportScaled * ageScaled * IQScaled  + (freqReportScaled||sub) + (freqReportScaled + ageScaled + IQScaled || stim),  
+                        family = "binomial", 
+                        method = "LRT", 
                         data = memFreqData, 
                         control = glmerControl(optimizer = "bobyqa", optCtrl=list(maxfun=1e6)), 
-                        expand_re = T,
-                        return = "merMod")
+                        expand_re = T)
 
-mem.freq.model.2 <- mixed(memAcc ~ freqReportScaled * (ageScaled + ageSquaredScaled) * IQScaled  + (freqReportScaled|sub), 
-                          family = "binomial", method = "LRT",
+mem.freq.model.2 <- mixed(memAcc ~ freqReportScaled * (ageScaled + ageSquaredScaled) * IQScaled  + (freqReportScaled||sub) + (freqReportScaled + (ageScaled + ageSquaredScaled) + IQScaled || stim), 
+                          family = "binomial", 
+                          method = "LRT",
                           data = memFreqData, 
                           control = glmerControl(optimizer = "bobyqa", optCtrl=list(maxfun=1e6)), 
-                          expand_re = T,
-                          return = "merMod")
+                          expand_re = T)
+
+#Note: models do not converge with interactions in REs
 
 #compare models
 anova(mem.freq.model, mem.freq.model.2) #model w/ quadratic age fits better
 
 #display stats of best-fitting model
-mem.freq.2.stats <- mixed(memAcc ~ freqReportScaled * (ageScaled + ageSquaredScaled) *IQScaled  + (freqReportScaled|sub), 
-                          family = "binomial", method = "LRT",
-                          data = memFreqData, 
-                          control = glmerControl(optimizer = "bobyqa", optCtrl=list(maxfun=1e6)), 
-                          expand_re = T)
-mem.freq.2.stats
+mem.freq.model.2
+tab_model(mem.freq.model.2)
+
+# main effect of frequency report
 # main effect of age
 # main effect of quadratic age
 # main effect of IQ
-# main effect of frequency report
 # freq report x age
 # freq report x quadratic age
-
-tab_model(mem.freq.2.stats)
 ```
 
 ## Model: Comparison of frequency report vs. frequency condition as predictors
 ```{r freq reports vs. freq cond}
 #determine whether frequency report model (mem.freq.model.2) or frequency condition model fits better
 
-mem.freq.cond.model <- mixed(memAcc ~ freqCond * (ageScaled + ageSquaredScaled) *IQScaled + (freqCond|sub), 
+#run freqcond model w/ same dataset
+mem.freq.cond.model <- mixed(memAcc ~ freqCond * (ageScaled + ageSquaredScaled) *IQScaled + (freqReportScaled||sub)+ (freqCond + (ageScaled + ageSquaredScaled) + IQScaled || stim), 
                              family = "binomial", method = "LRT", 
                              data = memFreqData, 
                              control = glmerControl(optimizer = "bobyqa", optCtrl=list(maxfun=1e6)), 
@@ -777,6 +901,7 @@ anova(mem.freq.cond.model, mem.freq.model.2)
 #frequency report model fits better
 ```
 
+-----------------------------------------------------
 
 # Brain-behavior relations
 ```{r mem neural data processing}
@@ -791,19 +916,27 @@ freq_diff_pfc <- read_csv("neural_data/encoding_high_vs_low_pfc.txt", col_names 
 # Cope 5 (High Freq > Low Freq): Caudate Sphere
 freq_diff_caudate <- read_csv("neural_data/encoding_high_vs_low_caudate.txt", col_names = "freq_caudate")
 
+# Cope 5 (High Freq > Low Freq): Hippocampus Sphere
+freq_diff_hipp <- read_csv("neural_data/encoding_high_vs_low_hipp.txt", col_names = "freq_hipp")
+
+# Cope 5 (High Freq > Low Freq): Parahippocampus Sphere
+freq_diff_parahipp <- read_csv("neural_data/encoding_high_vs_low_parahipp.txt", col_names = "freq_parahipp")
+
 # Subject order
 sub_order <- read_csv("neural_data/sublist_ordered.txt", col_names = "sub") 
 
-encoding_estimates <- bind_cols(sub_order, mean_pfc, freq_diff_pfc, freq_diff_caudate) 
+encoding_estimates <- bind_cols(sub_order, mean_pfc, freq_diff_pfc, freq_diff_caudate, freq_diff_hipp, freq_diff_parahipp) 
+
+#recode subject as factor
 encoding_estimates$sub <- as.factor(encoding_estimates$sub)
 
 #combine w/ memory estimates
 mem_means <- full_join(memSubStats, encoding_estimates, by = c("sub"))
 
-#add IQ
+#add IQ to dataframe
 IQList <- subList %>%
-  select(sub, IQ)
-IQList$sub <- as.factor(IQList$sub)
+  select(sub, IQ) %>%
+  mutate(sub = as.factor(sub))
 
 mem_means <- full_join(mem_means, IQList, by = c("sub"))
 ```
@@ -906,6 +1039,31 @@ pfc_age_resid_plot <- ggplot(temp, aes(x = age, y = residuals.pfc_iq_model.)) +
 pfc_age_resid_plot
 ```
 
+### Model: PFC modulation by age controlling for learning covariates
+```{r mean PFC age model with covariates}
+#How does overall PFC activity at encoding relate to age? 
+subCov <- full_join(subFreqAcc, subFreqRepError, by = "sub")
+
+#add to mem_means
+mem_means <- full_join(mem_means, subCov, by = "sub")
+
+#scale variables
+mem_means$ageScaled <- scale_this(mem_means$age)
+mem_means$IQScaled <- scale_this(mem_means$IQ)
+mem_means$ageSquaredScaled <- scale_this(mem_means$age^2)
+mem_means$freq_pfc_scaled <- scale_this(mem_means$freq_pfc)
+mem_means$freqAccScaled <- scale_this(mem_means$freqAcc)
+mem_means$freqLastRepAccScaled <- scale_this(mem_means$freqLastRepAcc)
+mem_means$freqErrorMagScaled <- scale_this(mem_means$freqErrorMag)
+
+
+freq_pfc_model.age.cov <- lm(freq_pfc_scaled ~ (ageScaled + ageSquaredScaled) * IQScaled
+                             + freqAccScaled + freqLastRepAccScaled + freqErrorMagScaled, data = mem_means)
+
+summary(freq_pfc_model.age.cov)
+#main effect of age
+#main effect of quadratic age
+```
 
 
 ### Mediation: Does PFC modulation mediate the relation between age and memory difference scores?
@@ -942,7 +1100,7 @@ summary(fit.dv)
 #Yes, evidence for a partial mediation
 
 # Step 4: Causal mediation analysis - treat = IV, mediator = mediator
-med.out = mediate(fit.mediator, fit.dv, treat='ageScaled', mediator='freq_pfc_scaled', boot=T)
+med.out = mediate(fit.mediator, fit.dv, treat='ageScaled', mediator='freq_pfc_scaled', covariates = c('IQ Scaled', 'ageSquaredScaled'), boot=T, sims = 10000)
 
 #examine results
 mediation_results <- summary(med.out)
@@ -953,8 +1111,51 @@ mediation_results
 
 Overall, this suggests that PFC activity mediates the relation between age and memory difference scores, while controlling for IQ and quadratic age.
 
+### Mediation: Does the age-PFC-memory mediation hold when controlling for frequency learning?
+```{r mem pfc mediation covariates}
+# Does PFC modulation mediate the relation between age and memory difference scores?
 
-### Mediation: Does the mediation hold without controlling for IQ and quadratic age?
+# DV: Memory Difference Scores
+# IV: Age
+# Mediator: PFC Activity
+# Control variables: Age^2, IQ, freqAcc, freqLastRepAcc, freqErrorMag
+
+#scale memory difference scores
+mem_means$mem_diff_scaled <- scale_this(mem_means$mem_diff)
+
+# Step 1: The total effect - is there a relation between age and memory difference scores? DV ~ IV
+fit.totaleffect <- lm(mem_diff_scaled ~ (ageScaled + ageSquaredScaled) + IQScaled + freqAccScaled + freqLastRepAccScaled + freqErrorMagScaled, mem_means)
+summary(fit.totaleffect)
+
+# Answer: Yes.
+
+# Step 2: The effect of the IV on the mediator - is there a relation between age and pfc modulation?
+# Mediator ~ IV
+fit.mediator <- lm(freq_pfc_scaled ~ (ageScaled + ageSquaredScaled) + IQScaled + freqAccScaled + freqLastRepAccScaled + freqErrorMagScaled, mem_means)
+summary(fit.mediator)
+
+# Answer: Yes
+
+# Step 3: The effect of the mediator on the DV while controlling for the IV
+# Is there a relation between pfc activity and memory difference scores when controlling for age?
+# DV ~ IV + Mediator
+fit.dv <- lm(mem_diff_scaled ~ (ageScaled + ageSquaredScaled) + IQScaled + freq_pfc_scaled + freqAccScaled + freqLastRepAccScaled + freqErrorMagScaled, mem_means)
+summary(fit.dv)
+
+#Yes, evidence for a partial mediation
+
+# Step 4: Causal mediation analysis - treat = IV, mediator = mediator
+med.out = mediate(fit.mediator, fit.dv, treat='ageScaled', mediator='freq_pfc_scaled', covariates = c('ageSquaredScaled', 'IQScaled', 'freqAccScaled', 'freqLastRepAccScaled', 'freqErrorMagScaled'), boot=T, sims = 10000)
+
+#examine results
+mediation_results <- summary(med.out)
+mediation_results
+
+#Overall this suggests that there is a mediation.
+```
+
+
+### Mediation: Does the age-PFC-memory mediation hold without controlling for IQ and quadratic age?
 ```{r mem pfc mediation no covariates}
 # Does PFC modulation mediate the relation between age and memory difference scores?
 
@@ -984,7 +1185,7 @@ summary(fit.dv)
 #Yes.
 
 # Step 4: Causal mediation analysis - treat = IV, mediator = mediator
-med.out = mediate(fit.mediator, fit.dv, treat='ageScaled', mediator='freq_pfc_scaled', boot=T)
+med.out = mediate(fit.mediator, fit.dv, treat='ageScaled', mediator='freq_pfc_scaled', boot=T, sims = 10000)
 
 #examine results
 mediation_results <- summary(med.out)
@@ -995,7 +1196,7 @@ mediation_results
 Yes, even without controlling for IQ and quadratic age, PFC activity mediates the relation between age and memory difference scores.
 
 
-### Mediation: Does age mediate the relation between PFC activity and memory difference scores?
+### Reverse mediation: Does age mediate the relation between PFC activity and memory difference scores?
 ```{r mem pfc mediation reverse}
 # DV: Memory Difference Scores
 # IV: PFC activity
@@ -1023,7 +1224,7 @@ summary(fit.dv)
 #Answer: Yes.
 
 # Step 4: Causal mediation analysis - treat = IV, mediator = mediator
-med.out = mediate(fit.mediator, fit.dv, treat='freq_pfc_scaled', mediator='ageScaled', boot=T)
+med.out = mediate(fit.mediator, fit.dv, treat='freq_pfc_scaled', mediator='ageScaled', boot=T, sims = 10000)
 
 
 #examine results
@@ -1034,6 +1235,95 @@ mediation_results
 ```
 
 No, age does not significantly mediate the relation between PFC activity and memory difference scores.
+
+### PFC control analyses
+```{r pfc activation by block data processing}
+memSubStatsBlock <- memData %>% 
+  group_by(sub, age, freqCond, block, block_type) %>%
+  dplyr::summarize(mean_mem = mean(memAcc, na.rm = T)) %>%
+  spread(freqCond, mean_mem) %>%
+  ungroup() %>%
+  mutate(mem_diff = `5` - `1`) %>%
+  dplyr::rename(high_acc = `5`, low_acc = `1`)
+
+pfc_by_block <- read_csv("neural_data/encoding_high_vs_low_by_block_pfc.csv")
+pfc_by_block$sub <- as.factor(pfc_by_block$sub)
+pfc_by_block$block <- as.factor(pfc_by_block$block)
+
+#join
+mem_pfc_by_block <- full_join(memSubStatsBlock, pfc_by_block, by = c("sub", "block"))
+
+#add IQs
+subIQs <- subList %>%
+  select(sub, IQ) %>%
+  mutate(sub = as.factor(sub))
+
+mem_pfc_by_block <- full_join(mem_pfc_by_block, subIQs, by = c("sub"))
+```
+
+
+#### Model: PFC modulation by age by block
+```{r freq PFC age block}
+#scale variables
+mem_pfc_by_block$pfc_scaled <- scale_this(mem_pfc_by_block$estimate)
+mem_pfc_by_block$IQScaled <- scale_this(mem_pfc_by_block$IQ)
+mem_pfc_by_block$ageScaled <- scale_this(mem_pfc_by_block$age)
+mem_pfc_by_block$ageSquaredScaled <- scale_this(mem_pfc_by_block$age^2)
+
+#Is there a relation between age and PFC modulation?
+freq_pfc_model.age.block <- mixed(pfc_scaled ~ (ageScaled) * IQScaled * block_type + (1|sub), data = mem_pfc_by_block)
+
+freq_pfc_model.age.block.2 <- mixed(pfc_scaled ~ (ageScaled + ageSquaredScaled) * IQScaled * block_type + (1|sub), data = mem_pfc_by_block)
+
+anova(freq_pfc_model.age.block, freq_pfc_model.age.block.2) #model with age squared fits better
+
+#display stats from best-fitting model
+freq_pfc_model.age.block.2
+tab_model(freq_pfc_model.age.block.2)
+#main effect of age
+#main effect of quadratic age
+#no interactions with block type
+```
+
+PFC activity increases with age, even when controlling for block type.
+
+#### Plot: PFC modulation by age by block
+```{r PFC age block plot, fig.height = 4, fig.width = 4}
+mem_pfc_by_block %<>%
+  drop_na()
+
+pfc_age_block_plot <- ggplot(mem_pfc_by_block, aes(x = age, y = estimate)) +
+  facet_wrap(~block_type) +
+  geom_point(color = color3) + 
+  geom_smooth(method = "lm", formula = y ~ poly(x,2), color = color1, fill = color1) +
+  xlab("Age") +
+  ylab("PFC Activation (High- vs. Low-Value)") +
+  kate.theme
+pfc_age_block_plot
+```
+
+#### Model: Memory difference scores by PFC activitation by block type
+```{r mean PFC mem_diff model with block type}
+#How does PFC activity at encoding (5 vs. 1) relate to memory difference scores?
+
+#scale variables
+mem_pfc_by_block$pfc_scaled <- scale_this(mem_pfc_by_block$estimate)
+mem_pfc_by_block$ageScaled <- scale_this(mem_pfc_by_block$age)
+mem_pfc_by_block$IQScaled <- scale_this(mem_pfc_by_block$IQ)
+mem_pfc_by_block$ageSquaredScaled <- scale_this(mem_pfc_by_block$age^2)
+
+
+memDiff_mean_pfc_block <- mixed(mem_diff ~ pfc_scaled * (ageScaled) * IQScaled * block_type + (1|sub), data = mem_pfc_by_block)
+
+memDiff_mean_pfc_block.2 <- mixed(mem_diff ~ pfc_scaled * (ageScaled + ageSquaredScaled) * IQScaled * block_type + (1|sub), data = mem_pfc_by_block)
+
+anova(memDiff_mean_pfc_block, memDiff_mean_pfc_block.2) #model with just age fits better
+
+memDiff_mean_pfc_block
+tab_model(memDiff_mean_pfc_block)
+# main effect of PFC
+```
+
 
 ## Caudate modulation (high vs. low frequency) during encoding
 
@@ -1054,7 +1344,6 @@ summary(freq_caudate_model.age)
 # no effect of IQ
 # age x IQ interaction
 
-summary(freq_caudate_model.age.2)
 ```
 No.
 
@@ -1078,135 +1367,302 @@ summary(memDiff_freq_caudate.2)
 ```
 No.
 
-# Repetition suppression
+## Hippocampus modulation (high vs. low frequency) during encoding
+
+### Model: Hippocampus modulation by age
+```{r freq hipp age}
+mem_means$freq_hipp_scaled <- scale_this(mem_means$freq_hipp)
+
+#Is there a relation between age and caudate modulation?
+freq_hipp_model.age <- lm(freq_hipp_scaled ~ (ageScaled) * IQScaled, data = mem_means)
+freq_hipp_model.age.2 <- lm(freq_hipp_scaled ~ (ageScaled + ageSquaredScaled) * IQScaled, data = mem_means)
+
+#compare models
+anova(freq_hipp_model.age, freq_hipp_model.age.2) #model with just age fits best
+
+#display stats from best-fitting model
+summary(freq_hipp_model.age)
+# age x IQ interaction
+```
+No.
+
+### Model: Memory difference scores by hippocampus modulation
+```{r freq hipp mem difference}
+#How does hippocampus modulation at encoding relate to memory difference scores?
+mem_means$freq_hipp_scaled <- scale_this(mem_means$freq_hipp)
+
+#scale variables
+memDiff_freq_hipp <- lm(mem_diff ~ freq_hipp_scaled * ageScaled * IQScaled, data = mem_means)
+memDiff_freq_hipp.2 <- lm(mem_diff ~ freq_hipp_scaled * (ageScaled + ageSquaredScaled) * IQScaled, data = mem_means)
+
+#compare models
+anova(memDiff_freq_hipp, memDiff_freq_hipp.2) #model with quadratic age fits better
+
+#display stats from best-fitting model
+summary(memDiff_freq_hipp.2)
+# main effect of age
+# main effect of quadratic age
+# no effect of hippocampal activity
+```
+No.
+
+## Parahippocampus modulation (high vs. low frequency) during encoding
+
+### Model: Parahippocampus modulation by age
+```{r freq parahipp age}
+mem_means$freq_parahipp_scaled <- scale_this(mem_means$freq_parahipp)
+
+#Is there a relation between age and caudate modulation?
+freq_parahipp_model.age <- lm(freq_parahipp_scaled ~ (ageScaled) * IQScaled, data = mem_means)
+freq_parahipp_model.age.2 <- lm(freq_parahipp_scaled ~ (ageScaled + ageSquaredScaled) * IQScaled, data = mem_means)
+
+#compare models
+anova(freq_parahipp_model.age, freq_parahipp_model.age.2) #model with just age fits best
+
+#display stats from best-fitting model
+summary(freq_parahipp_model.age)
+# no effects
+```
+No.
+
+### Model: Memory difference scores by parahippocampus modulation
+```{r freq parahipp mem difference}
+#How does hippocampus modulation at encoding relate to memory difference scores?
+mem_means$freq_parahipp_scaled <- scale_this(mem_means$freq_parahipp)
+
+#scale variables
+memDiff_freq_parahipp <- lm(mem_diff ~ freq_parahipp_scaled * ageScaled * IQScaled, data = mem_means)
+memDiff_freq_parahipp.2 <- lm(mem_diff ~ freq_parahipp_scaled * (ageScaled + ageSquaredScaled) * IQScaled, data = mem_means)
+
+#compare models
+anova(memDiff_freq_parahipp, memDiff_freq_parahipp.2) #model with quadratic age fits better
+
+#display stats from best-fitting model
+summary(memDiff_freq_parahipp.2)
+# main effect of age
+# main effect of quadratic age
+# no effect of parahippocampal activity
+```
+No.
+
+
+--------------------------------------------
+## Repetition suppression across all item appearances
 ```{r repetition suppression data processing}
 # Read in neural data
-RS_estimates <- read_csv("neural_data/RS_estimates.csv")
+RS_estimates <- read_csv("neural_data/RS_estimates.txt")
 
-#Combine mem data with RS data
-RS_estimates$sub <- as.factor(RS_estimates$sub)
-RS_estimates$block <- as.factor(RS_estimates$block)
+#recode block for sub 215 to match behavioral data
+RS_estimates <- RS_estimates %>%
+  mutate(block = case_when(sub == 215 ~ "1",
+                           sub != 215 ~ as.character(block)))
 
-#combine RS data with memory data
-temp <- full_join(memData_unfiltered, RS_estimates, by = c("sub", "stim", "block")) %>%
-  filter(freqCond == 5) %>%
-  select(sub, age, ageGroup, IQ, block, stim, memAcc, freqReport, phc1, phc5, decrease) %>%
-  rename(phc_decrease = decrease)
+#merge sub list with RS_estimates
+RS_data_all <- full_join(subList, RS_estimates, by = c("sub")) %>%
+  select(sub, age, ageGroup, IQ, block, stim, stim_num, phc1, phc2, phc3, phc4, phc5, decrease)
 
-RS_data_all <- temp
+#recode sub and block as factors
+RS_data_all$sub <- as.factor(RS_data_all$sub)
+RS_data_all$block <- as.factor(RS_data_all$block)
 
-# Remove outliers from neural data 
-phc_outlier_min <- mean(RS_data_all$phc_decrease, na.rm = T) - 3*sd(RS_data_all$phc_decrease, na.rm = T)
-phc_outlier_max <- mean(RS_data_all$phc_decrease, na.rm = T) + 3*sd(RS_data_all$phc_decrease, na.rm = T)
+# Reformat so estimates are all in the same column
+RS_data_unfiltered <- RS_data_all %>%
+  pivot_longer(cols = c(phc1:phc5), names_to = "repetition", values_to = "estimate", names_prefix = "phc") 
 
-phc_data <- RS_data_all %>%
-  filter(phc_decrease > phc_outlier_min) %>%
-  filter(phc_decrease < phc_outlier_max) %>%
-  select(sub, age, ageGroup, IQ, block, stim, memAcc, freqReport, phc_decrease)
+# Remove outliers from data 
+phc_min <- mean(RS_data_unfiltered$estimate, na.rm = T) - 5*sd(RS_data_unfiltered$estimate, na.rm = T)
+phc_max <- mean(RS_data_unfiltered$estimate, na.rm = T) + 5*sd(RS_data_unfiltered$estimate, na.rm = T)
 
-phc_num_outliers <- RS_data_all %>%
-  filter(is.na(phc_decrease) == F) %>%
-  nrow() - nrow(phc_data)
+# Compute number of outliers removed
+outliers_removed = nrow(RS_data_unfiltered %>%filter(estimate <= phc_min)) + nrow(RS_data_unfiltered %>%filter(estimate >= phc_max))
+ # 18
+
+# Number of observations
+num_observations = nrow(RS_data_unfiltered)
+
+#filter data
+RS_data <- RS_data_unfiltered %>%
+  filter(estimate > phc_min) %>%
+  filter(estimate < phc_max) 
 ```
 
-## Model: Repetition suppression and age
-```{r RS and age}
+### Plot: Neural activation by age group and repetition
+```{r repetition suppression plot, fig.height = 5, fig.width = 8}
+RS_boxplot_ageGroup <- ggplot(RS_data, aes(x = ageGroup, fill = repetition, y = estimate)) +
+  geom_boxplot(alpha = .5, outlier.alpha = .3) + 
+  scale_fill_manual(values = c(color1, color3, color2, "grey30", "grey84"), name = "Repetition") +
+  xlab("Age Group") +
+  ylab("PHC Neural Activation") +
+  kate.theme
+RS_boxplot_ageGroup
+```
 
-#----- Model 1: Is there a relation between the decrease in phc activity and participant age? -----
-# select data 
-model1_data <- phc_data %>%
-  select(sub, age, IQ, block, stim, phc_decrease) %>%
+### Model: Repetition suppression and age
+```{r RS and age}
+modelR1_data <- RS_data %>%
+  select(sub, age, IQ, block, stim, repetition, estimate) %>%
   drop_na() %>%
   mutate(age_scaled = scale_this(age),
          IQ_scaled = scale_this(IQ),
-         phc_decrease_scaled = scale_this(phc_decrease),
          age_squared_scaled = scale_this(age^2),
-         age_scaled_squared = age_scaled^2) %>%
-  droplevels()
+         repetition = as.numeric(repetition),
+         repetition_scaled = scale_this(repetition),
+         repetition_squared_scaled = scale_this(repetition^2))
+
+#run model including linear age and linear repetition number
+model.R1.1 <- mixed(estimate ~ IQ_scaled * age_scaled * repetition_scaled 
+                    + (repetition_scaled||sub) 
+                    + (repetition_scaled * IQ_scaled * (age_scaled + age_squared_scaled) || stim),
+                    data = modelR1_data,
+                    method = "S",
+                    expand_re = T,
+                    control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"))
+
+#add quadratic age
+model.R1.2 <- mixed(estimate ~ IQ_scaled * (age_scaled + age_squared_scaled) * repetition_scaled 
+                    + (repetition_scaled||sub) 
+                    + (repetition_scaled * IQ_scaled * (age_scaled + age_squared_scaled) ||stim),
+                    data = modelR1_data,
+                    method = "S",
+                    expand_re = T,
+                    control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"))
+
+#linear age, quadratic repetition number
+model.R1.3 <- mixed(estimate ~ IQ_scaled * age_scaled * (repetition_scaled + repetition_squared_scaled) 
+                    + (repetition_scaled + repetition_squared_scaled||sub) 
+                    + ((repetition_scaled + repetition_squared_scaled) * IQ_scaled * (age_scaled)||stim),
+                    data = modelR1_data,
+                    method = "S",
+                    expand_re = T,
+                    control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"))
+
+#quadratic age and repetition number
+model.R1.4 <- mixed(estimate ~ IQ_scaled * (age_scaled + age_squared_scaled) * (repetition_scaled +repetition_squared_scaled) 
+                    + (repetition_scaled + repetition_squared_scaled||sub)
+                    + ((repetition_scaled + repetition_squared_scaled) * IQ_scaled * (age_scaled + age_squared_scaled)||stim),
+                    data = modelR1_data,
+                    method = "S",
+                    expand_re = T,
+                    control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"))
+
+
+anova(model.R1.1, model.R1.2)
+#model w/ age^squared fits better
+
+anova(model.R1.2, model.R1.3)
+#model w/ quadratic age fits better
+
+anova(model.R1.2, model.R1.4)
+#model w/ both quadratic terms fits better
+
+model.R1.4
+tab_model(model.R1.4)
+# main effect of repetition
+# main effect of quadratic repetition
+# age x repetition
+# age x repetition squared
+# age squared x repetition
+# age squared x repetition squared
+
+```
+
+### Plot: Repetition suppression index by age
+```{r repetition suppression index plot, fig.width = 4, fig.height = 5}
+#Compute mean RS index for each participant
+RS_sub_data <- RS_data %>%
+  select(sub, age, ageGroup, IQ, block, stim, stim_num, decrease) %>%
+  unique() 
+
+phc_decrease_means <- RS_sub_data %>%
+  group_by(sub, age, ageGroup, IQ) %>%
+  summarize(mean_phc_decrease = mean(decrease, na.rm = T))
+
+phc_sub_distribution <- ggplot(phc_decrease_means, aes(x = age, y = mean_phc_decrease)) +
+  geom_point(color = color1) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), color = color3, fill = color3) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  ylab("Repetition Suppression Index") +
+  xlab("Age") +
+  kate.theme
+phc_sub_distribution 
+```
+
+
+### Model: Repetition suppression index by age
+```{r RS index age model}
+# select data 
+model1_data <- RS_sub_data %>%
+  select(sub, age, IQ, block, stim, decrease) %>%
+  drop_na() %>%
+  mutate(age_scaled = scale_this(age),
+         IQ_scaled = scale_this(IQ),
+         phc_decrease_scaled = scale_this(decrease),
+         age_squared_scaled = scale_this(age^2),
+         age_scaled_squared = age_scaled^2)
 
 
 # run model
-model.1.1 <- mixed(phc_decrease ~  IQ_scaled * (age_scaled) + 
-                     (1|sub), 
+model.1.1 <- mixed(decrease ~  IQ_scaled * (age_scaled) + 
+                     (1|sub) + ((IQ_scaled + age_scaled)|stim) , 
                    data = model1_data, 
                    method = "S",
                    control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"))
 
-model.1.2 <- mixed(phc_decrease ~  IQ_scaled * (age_scaled + age_squared_scaled) + 
-                   (1|sub), 
-                 data = model1_data, 
-                 method = "S",
-                 control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"))
+model.1.2 <- mixed(decrease ~  IQ_scaled * (age_scaled + age_squared_scaled) + 
+                     (1|sub) + (IQ_scaled + (age_scaled +age_squared_scaled)||stim), 
+                   data = model1_data, 
+                   expand_re = T,
+                   method = "S",
+                   control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"))
 
+#Note: models w/ IQ interaction in RE don't converge
 
-anova(model.1.1, model.1.2) #model with age squared fits better
+#compare models
+anova(model.1.1, model.1.2)
+#model with age squared fits better
 
 #display results
 model.1.2
-# Main effect of linear age
-# Main effect of quadratic age
-
 tab_model(model.1.2)
+# main effect of age
+# main effect of age^2
 ```
 
-## Plot: Repetition suppression and age
-```{r RS age plot}
-#compute mean for each participant
-RS_means <- model1_data %>%
-  group_by(sub, age) %>%
-  summarize(mean_RS = mean(phc_decrease, na.rm = T))
+### Are there relations between repetition suppression and behavior?
+```{r RS and behavior data processing}
+#add subject info to mem data
+subList$sub <- as.factor(subList$sub)
+memDataAll <- full_join(memData_unfiltered, subList, by = c("sub")) %>%
+  mutate_at(.vars = vars(sub), .funs = factor)
 
-RS_age_plot <- ggplot(RS_means, aes(x = age, y = mean_RS)) +
-  geom_point(color = color1) +
-  geom_smooth(method = "lm", formula = y ~ poly(x, 2), color = color3, fill = color3) +
-  ylab("Mean Repetition Suppression") +
-  xlab("Age") +
-  kate.theme
-RS_age_plot
-```
-
-```{r RS box plots, fig.height = 4, fig.width = 5}
-temp <- RS_data_all %>%
-  filter(phc_decrease > phc_outlier_min) %>%
-  filter(phc_decrease < phc_outlier_max) %>% 
-  pivot_longer(cols = c(phc1, phc5), names_to = "repetition", names_prefix = "phc", values_to = "activity")
-
-RS_age_group_plot <- ggplot(temp, aes(x = ageGroup, color = repetition, y = activity)) +
-  geom_boxplot(aes(fill = repetition), alpha = .3) +
-  scale_fill_manual(values = c(color1, color3), name = "Repetition") +
-  scale_color_manual(values = c(color1, color3), name = "Repetition") +
-  ylab("Neural Activity") +
-  xlab("Age Group") +
-  kate.theme
-RS_age_group_plot
+#merge w/ RS_sub_data
+phc_data <- full_join(memDataAll, RS_sub_data, by = c("sub", "stim", "block")) %>%
+  filter(freqCond == 5) %>%
+  select(sub, age, ageGroup, IQ, block, stim, memAcc, freqReport, decrease) %>%
+  rename(phc_decrease = decrease)
 ```
 
 
-
-## Model: Repetition suppression and frequency reports
+#### Model: Repetition suppression and frequency reports
 ```{r RS frequency reports}
 #----- Model 2: Is there a relation between the decrease in phc activity and reports of item frequency? -----
-# select data 
 model2_data <- phc_data %>%
   select(sub, age, IQ, block, stim, phc_decrease, freqReport) %>%
   drop_na() %>%
   mutate(age_scaled = scale_this(age),
          IQ_scaled = scale_this(IQ),
          phc_decrease_scaled = scale_this(phc_decrease),
-         age_squared_scaled = scale_this(age^2)) %>%
-  droplevels()
-
+         age_squared_scaled = scale_this(age^2))
 
 # run model
 model.2.1 <- mixed(freqReport ~ phc_decrease_scaled * IQ_scaled * age_scaled + 
-                   (phc_decrease_scaled|sub), 
+                   (phc_decrease_scaled||sub) + (phc_decrease_scaled * IQ_scaled * age_scaled||stim), 
                  data = model2_data, 
                  method = "S",
                  control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
                  expand_re = T)
 
-model.2.2 <- mixed(freqReport ~ phc_decrease_scaled * IQ_scaled * (age_scaled + age_squared_scaled) + 
-                     (phc_decrease_scaled|sub), 
+model.2.2 <- mixed(freqReport ~ phc_decrease_scaled * IQ_scaled * (age_scaled + age_squared_scaled) + (phc_decrease_scaled||sub) + (phc_decrease_scaled* IQ_scaled * (age_scaled + age_squared_scaled)||stim),  
                    data = model2_data, 
                    method = "S",
                    control = lmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
@@ -1216,12 +1672,12 @@ anova(model.2.1, model.2.2) #model with just age fits better
 
 #display results
 model.2.1
-# No effects of phc decrease on frequency report
-
 tab_model(model.2.1)
+# main effect of IQ
+# main effect of age
 ```
 
-### Model: Repetition suppression and associative memory
+#### Model: Repetition suppression and associative memory
 ```{r RS and memory}
 
 #----- Model 3: Is there a relation between the decrease in phc activity and associative memory for each item? -----
@@ -1232,12 +1688,11 @@ model3_data <- phc_data %>%
   mutate(age_scaled = scale_this(age),
          IQ_scaled = scale_this(IQ),
          phc_decrease_scaled = scale_this(phc_decrease),
-         age_squared_scaled = scale_this(age^2)) %>%
-    droplevels()
+         age_squared_scaled = scale_this(age^2))
 
-# run model
+#run models
 model.3.1 <- mixed(memAcc ~ phc_decrease_scaled * IQ_scaled * age_scaled + 
-                   (phc_decrease_scaled | sub), 
+                   (phc_decrease_scaled ||sub) +  (phc_decrease_scaled * IQ_scaled * age_scaled||stim), 
                  data = model3_data,
                  family = "binomial",
                  method = "LRT",
@@ -1245,24 +1700,24 @@ model.3.1 <- mixed(memAcc ~ phc_decrease_scaled * IQ_scaled * age_scaled +
                  expand_re = T)
 
 model.3.2 <- mixed(memAcc ~ phc_decrease_scaled * IQ_scaled * (age_scaled + age_squared_scaled) + 
-                   (phc_decrease_scaled | sub), 
+                   (phc_decrease_scaled ||sub) +  (phc_decrease_scaled * IQ_scaled * (age_scaled + age_squared_scaled)||stim), 
                  data = model3_data,
                  family = "binomial",
                  method = "LRT",
                  control = glmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
                  expand_re = T)
 
+#test fit
 anova(model.3.1, model.3.2) #model with just age squared fits better
 
 #display results
 model.3.2
-# Main effect of PHC decrease
-
 tab_model(model.3.2)
+# Main effect of PHC decrease
 ```
 
-## Plot: Memory accuracy by repetition suppression
-```{r RS mem plot}
+#### Plot: Memory accuracy by repetition suppression
+```{r RS mem plot, fig.height = 3, fig.width = 8}
 
 #bin phc_decrease into 7 bins
 model3_data$phc_bins <- cut(model3_data$phc_decrease, breaks = c(-Inf, -150, 0, 150, 300, Inf), include.lowest = T)
@@ -1284,7 +1739,7 @@ membyRSBarPlot <- ggplot(phc_mem_acc_means, aes(x = as.factor(phc_bins), y = mem
 membyRSBarPlot
 ```
 
-### Model: Memory by repetition suppression and frequency reports
+#### Model: Memory by repetition suppression and frequency reports
 ```{r memory by RS and freq reports}
 #----- Model 4: Do frequency reports and repetition suppression explain distinct sources of variance in memory? ----
 model4_data <- full_join(model2_data, model3_data, by = c("sub", "age", "IQ", "block", "stim", "phc_decrease")) %>%
@@ -1294,29 +1749,230 @@ model4_data <- full_join(model2_data, model3_data, by = c("sub", "age", "IQ", "b
          IQ_scaled = scale_this(IQ),
          phc_decrease_scaled = scale_this(phc_decrease),
          age_squared_scaled = scale_this(age^2),
-         freq_report_scaled = scale_this(freqReport)) %>%
-  droplevels()
+         freq_report_scaled = scale_this(freqReport))
                       
-# run model
-model.4.1 <- mixed(memAcc ~ age_scaled * IQ_scaled * phc_decrease_scaled * freq_report_scaled  + (phc_decrease_scaled * freq_report_scaled|sub), 
+
+# run models
+#model.4.1 <- mixed(memAcc ~ phc_decrease_scaled * IQ_scaled * freq_report_scaled * age_scaled + 
+ #                  (phc_decrease_scaled + freq_report_scaled ||sub) + (phc_decrease_scaled + IQ_scaled + freq_report_scaled + age_scaled ||stim) , 
+#                 data = model4_data,
+#                 family = "binomial",
+#                 method = "LRT",
+#                 control = glmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
+#                 expand_re = T)
+
+model.4.2 <- mixed(memAcc ~ phc_decrease_scaled * IQ_scaled * freq_report_scaled * (age_scaled + age_squared_scaled) + 
+                   (phc_decrease_scaled + freq_report_scaled ||sub) + (phc_decrease_scaled + IQ_scaled + freq_report_scaled + (age_scaled + age_squared_scaled)||stim) , 
                  data = model4_data,
                  family = "binomial",
                  method = "LRT",
                  control = glmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
                  expand_re = T)
 
-model.4.2 <- mixed(memAcc ~ (age_scaled + age_squared_scaled) * IQ_scaled * phc_decrease_scaled * freq_report_scaled  + (phc_decrease_scaled * freq_report_scaled|sub), 
-                 data = model4_data,
-                 family = "binomial",
-                 method = "LRT",
-                 control = glmerControl(optCtrl = list(maxfun=1e6), optimizer = "bobyqa"), 
-                 expand_re = T)
-
-#compare model fit
-anova(model.4.1, model.4.2) #model with age squared fits better
+#compare models
+#anova(model.4.1., model.4.2) #model with age^2 fits better
 
 #display results
 model.4.2
-
 tab_model(model.4.2)
+```
+
+
+------------------------------------------------------------------------
+
+## Repetition suppression and frequency reports as predictors of neural activation at encoding 
+
+```{r combine RS and pfc data}
+#compute average RS for each subject
+sub_RS <- phc_data %>%
+  group_by(sub) %>%
+  summarize(meanRS = mean(phc_decrease, na.rm = T))
+
+#combine phc data with freq PFC estimates
+mem_means <- full_join(mem_means, sub_RS, by = "sub")
+```
+
+
+### Do average repetition suppression indices relate to linear and quadratic age?
+```{r mean RS and age}
+RS.age  <- lm(meanRS ~ (ageScaled + ageSquaredScaled) * IQScaled, mem_means)
+
+#display
+summary(RS.age)
+# marginal relation with age
+# significant relation with age squared
+```
+
+### Do average repetition suppression indices relate to memory?
+```{r mean RS, age and memory}
+mem_means$meanRS_scaled <- scale_this(mem_means$meanRS)
+
+RS.memory <- lm(mem_diff ~ meanRS_scaled * (ageScaled + ageSquaredScaled) * IQScaled, mem_means)
+summary(RS.memory) 
+
+summary(RS.memory)
+# main effect of age and quadratic age
+# no effect of RS
+```
+
+### Do average repetition suppression indices relate to PFC activity at encoding?
+```{r RS and PFC activation}
+RS.PFC.model.data <- mem_means %>%
+  mutate(age_scaled = scale_this(age),
+         age_squared_scaled = scale_this(age^2),
+         meanRS_scaled = scale_this(meanRS),
+         IQ_scaled = scale_this(IQ))
+
+RS.PFC.model.1 <- lm(freq_pfc ~ meanRS_scaled*age_scaled *IQ_scaled, data = RS.PFC.model.data)
+
+RS.PFC.model.2 <- lm(freq_pfc ~ meanRS_scaled*(age_scaled + age_squared_scaled)*IQ_scaled, data = RS.PFC.model.data)
+
+anova(RS.PFC.model.1, RS.PFC.model.2) #quadratic model fits better
+
+summary(RS.PFC.model.2)
+# main effect of age
+# main effect of quadratic age
+# main effect of IQ
+# no effect of RS
+```
+
+### Do average repetition suppression indices relate to caudate activity at encoding?
+```{r RS and caudate activation}
+RS.caudate.model.data <- mem_means %>%
+  mutate(age_scaled = scale_this(age),
+         age_squared_scaled = scale_this(age^2),
+         meanRS_scaled = scale_this(meanRS),
+         IQ_scaled = scale_this(IQ))
+
+RS.caudate.model.1 <- lm(freq_caudate ~ meanRS_scaled*age_scaled *IQ_scaled, data = RS.caudate.model.data)
+
+RS.caudate.model.2 <- lm(freq_caudate ~ meanRS_scaled*(age_scaled + age_squared_scaled)*IQ_scaled, data = RS.caudate.model.data)
+
+anova(RS.caudate.model.1, RS.caudate.model.2) #linear age fits better
+
+summary(RS.caudate.model.1)
+# age x IQ interaction
+# no effect of RS
+```
+
+
+```{r combine FR and neural data}
+#compute frequency distance for each participant
+freqDist <- memFreqData %>%
+  group_by(sub, freqCond) %>%
+  summarize(mean_freq_report = mean(freqReport)) %>%
+  pivot_wider(names_from = "freqCond", names_prefix = "freqCond", values_from = mean_freq_report) %>%
+  mutate(freqDist = freqCond5 - freqCond1)
+
+#combine with neural data
+mem_means <- full_join(mem_means, freqDist, by = "sub")
+
+```
+
+### Model and plot: Does frequency distance relate to linear and quadratic age?
+```{r mean FD and age}
+FD.age <- lm(freqDist ~ (ageScaled + ageSquaredScaled)*IQScaled, mem_means)
+summary(FD.age) 
+#relation with age
+#relation with squared age
+#relation with IQ
+
+freqDistAgePlot <- ggplot(mem_means, aes(x = age, y= freqDist)) +
+  geom_point(color = color1) +
+  geom_smooth(method = "lm", formula = y ~poly(x,2), color = color3, fill = color3) +
+  xlab("Age") +
+  ylab("Perceived Difference in Item Frequencies") + 
+  kate.theme 
+freqDistAgePlot
+```
+
+### Model: Does frequency distance relate to memory?
+```{r frequency distance  memory}
+FR.mem.model.data <- mem_means %>%
+  mutate(age_scaled = scale_this(age),
+         age_squared_scaled = scale_this(age^2),
+         freqDist_scaled = scale_this(freqDist),
+         IQ_scaled = scale_this(IQ),
+         freq_pfc_scaled = scale_this(freq_pfc))
+
+#does PFC explain memory above and beyond frequency distance
+FR.mem.model <- lm(mem_diff ~ freqDist_scaled *(age_scaled + age_squared_scaled)*IQ_scaled, data = FR.mem.model.data)
+
+summary(FR.mem.model)
+#main effect of age
+#main effect of quadratic age
+#freq dist x age interaction
+#freq dist x quadratic age interaction
+```
+
+
+### Model: Frequency distance and PFC activation
+```{r FD and PFC activation}
+FR.PFC.model.data <- mem_means %>%
+  mutate(age_scaled = scale_this(age),
+         age_squared_scaled = scale_this(age^2),
+         freqDist_scaled = scale_this(freqDist),
+         IQ_scaled = scale_this(IQ))
+
+
+FR.PFC.model.1 <- lm(freq_pfc_scaled ~ freqDist_scaled *age_scaled *IQ_scaled, data = FR.PFC.model.data)
+
+FR.PFC.model.2 <- lm(freq_pfc_scaled ~ freqDist_scaled *(age_scaled + age_squared_scaled)*IQ_scaled, data = FR.PFC.model.data)
+
+anova(FR.PFC.model.1, FR.PFC.model.2)
+#model with just age fits better
+
+summary(FR.PFC.model.1)
+# frequency distance strongly predicts PFC activity
+# no effect of age on PFC activity when you account for frequency distance
+```
+
+### Plot: Frequency distance and PFC activation
+```{r freq dist pfc plot}
+freqDistPFCPlot <- ggplot(mem_means, aes(x = freqDist, y= freq_pfc)) +
+  geom_point(color = color1) +
+  geom_smooth(method = "lm", color = color3, fill = color3) +
+  xlab("Perceived Difference in Item Frequencies") +
+  ylab("Differential PFC Activation") + 
+  kate.theme 
+freqDistPFCPlot
+```
+
+
+### Model: Frequency distance and PFC activation on memory
+```{r frequency distance PFC memory}
+FR.PFC.mem.model.data <- mem_means %>%
+  mutate(age_scaled = scale_this(age),
+         age_squared_scaled = scale_this(age^2),
+         freqDist_scaled = scale_this(freqDist),
+         IQ_scaled = scale_this(IQ),
+         freq_pfc_scaled = scale_this(freq_pfc))
+
+#does PFC explain memory above and beyond frequency distance
+FR.mem.PFC.model <- lm(mem_diff ~ freqDist_scaled *(age_scaled + age_squared_scaled)*IQ_scaled*freq_pfc_scaled, data = FR.PFC.mem.model.data )
+
+summary(FR.mem.PFC.model)
+#main effect of age
+#main effect of quadratic age
+#marginal effect of PFC activation
+```
+
+
+### Model: Frequency distance and caudate activation
+```{r FR and caudate activation}
+FR.caudate.model.data <- mem_means %>%
+  mutate(age_scaled = scale_this(age),
+         age_squared_scaled = scale_this(age^2),
+         freqDist_scaled = scale_this(freqDist),
+         IQ_scaled = scale_this(IQ))
+
+FR.caudate.model.1 <- lm(freq_caudate ~ freqDist_scaled *age_scaled *IQ_scaled, data = FR.caudate.model.data)
+
+FR.caudate.model.2 <- lm(freq_caudate ~ freqDist_scaled *(age_scaled + age_squared_scaled)*IQ_scaled, data = FR.caudate.model.data)
+
+anova(FR.caudate.model.1, FR.caudate.model.2)
+#model with just age fits better
+
+summary(FR.caudate.model.1)
+#no relation
 ```

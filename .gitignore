@@ -3,5 +3,7 @@
 .RData
 .Ruserdata
 main_analysis_cache/
+main_analysis_R1_cache/
+old/
 *.Rproj
 *.html
